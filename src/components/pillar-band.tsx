@@ -1,4 +1,5 @@
 import { brand } from "@/lib/content";
+import { CryptoTicker } from "@/components/crypto-ticker";
 
 const pillarCopy = {
   Invest: "Structured access to modern market participation.",
@@ -9,8 +10,9 @@ const pillarCopy = {
 
 export function PillarBand() {
   return (
-    <section id="platform" className="relative py-20">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+    <section id="platform" className="relative">
+      <CryptoTicker />
+      <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {brand.pillars.map((pillar, index) => (
             <article

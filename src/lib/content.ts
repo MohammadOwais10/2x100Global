@@ -2,15 +2,18 @@ export const brand = {
   name: "2X100",
   suffix: "Global",
   tagline: "Complete Investment & Wealth Building Plan",
-  taglineHi: "संपूर्ण निवेश एवं संपत्ति निर्माण योजना",
   motto: "A Brighter Financial Tomorrow",
   pillars: ["Invest", "Trade", "Grow", "Together"] as const,
   visionLine: "Global Vision, Stronger Tomorrow",
 };
 
-export const introduction = {
-  title: "Welcome to 2X100 Global",
-  body: "2X100 Global is a technology-driven company focused on automated digital asset trading solutions. Our objective is to provide individuals worldwide with access to advanced trading technology through a simple, transparent, and user-friendly platform.",
+export const hero = {
+  headlineLine1: "Wealth building,",
+  headlineLine2: "simplified by AI.",
+  body: "2x100 Global brings automated digital asset trading within everyone's reach — a transparent platform, two clear signals a day, and complete visibility on every move. No charts, no guesswork, no barriers.",
+  primaryCta: "Start Investing",
+  secondaryCta: "Business Plan",
+  businessPlanPdf: "/2x100Global.pdf",
 };
 
 export const missionVision = {
@@ -77,7 +80,7 @@ export const corporate = {
 };
 
 export const autoTrading = {
-  title: "How the 2X100 Auto-Trading System Works",
+  title: "How the 2x100 Global Auto-Trading System Works",
   intro:
     "Members deposit funds into the platform, and our AI-powered trading system analyzes market opportunities and executes trades automatically. You follow the trading code provided at the scheduled time to participate and earn potential profits. The entire process is designed to be simple, transparent, and user-friendly.",
   cta: "Follow the Code. Trade with Confidence.",
@@ -146,5 +149,4 @@ export const navLinks = [
   { href: "#offerings", label: "Offerings" },
   { href: "#system", label: "Auto-Trading" },
   { href: "#leadership", label: "Leadership" },
-  { href: "#corporate", label: "Corporate" },
 ] as const;

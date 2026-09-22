@@ -15,14 +15,14 @@ const body = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "2X100 Global | Complete Investment & Wealth Building Plan",
+  title: "2x100 Global | Complete Investment & Wealth Building Plan",
   description:
-    "2X100 Global delivers AI-powered automated digital asset trading, transparent member participation, and a technology-driven wealth building ecosystem.",
+    "2x100 Global delivers AI-powered automated digital asset trading, transparent member participation, and a technology-driven wealth building ecosystem.",
   openGraph: {
-    title: "2X100 Global",
+    title: "2x100 Global",
     description:
       "Invest · Trade · Grow · Together — A Brighter Financial Tomorrow.",
-    images: [{ url: "/logo-2x100.png" }],
+    images: [{ url: "/logo.png" }],
   },
 };
 

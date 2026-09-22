@@ -1,5 +1,6 @@
 import { autoTrading } from "@/lib/content";
 import { Reveal } from "@/components/reveal";
+import { AiTradingChart } from "@/components/ai-trading-chart";
 
 export function AutoTradingSection() {
   return (
@@ -17,40 +18,13 @@ export function AutoTradingSection() {
           </p>
         </Reveal>
 
-        <div className="mt-14 grid gap-8 xl:grid-cols-[0.95fr_1.05fr_0.9fr]">
-          <Reveal delay={0.05}>
-            <div className="panel-glass h-full rounded-3xl p-7 md:p-8">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[var(--gold-bright)]">
-                {autoTrading.schedule.label}
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-[#a8bdb0]">
-                {autoTrading.schedule.note}
-              </p>
-              <div className="mt-6 grid gap-3">
-                {autoTrading.schedule.sessions.map((session) => (
-                  <div
-                    key={session.label}
-                    className="rounded-2xl border border-[var(--line)] bg-[#081912]/80 px-5 py-4"
-                  >
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-[#7a9484]">
-                      {session.label}
-                    </p>
-                    <p className="mt-1 font-display text-3xl text-white">
-                      {session.time}
-                    </p>
-                    <p className="mt-1 text-xs text-[#8fae98]">Global Standard Time</p>
-                  </div>
-                ))}
-              </div>
-              <a
-                href="#contact"
-                className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-[var(--line)] bg-[#030806] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold-bright)] transition hover:border-[var(--gold-bright)]"
-              >
-                {autoTrading.cta}
-              </a>
-            </div>
-          </Reveal>
+        <Reveal delay={0.08}>
+          <div className="mt-14">
+            <AiTradingChart />
+          </div>
+        </Reveal>
 
+        <div className="mt-8 grid gap-8 xl:grid-cols-2">
           <Reveal delay={0.1}>
             <div className="panel-glass h-full rounded-3xl p-7 md:p-8">
               <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[var(--gold-bright)]">

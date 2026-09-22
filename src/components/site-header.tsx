@@ -26,8 +26,8 @@ export function SiteHeader() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4 lg:px-10">
         <Link href="/" className="group flex items-center gap-3">
           <Image
-            src="/logo-2x100.png"
-            alt="2X100 Global"
+            src="/logo.png"
+            alt="2x100 Global"
             width={148}
             height={48}
             className="h-10 w-auto object-contain transition group-hover:brightness-110"
