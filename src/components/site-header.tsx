@@ -4,9 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { navLinks } from "@/lib/content";
+import { useAuth } from "@/context/AuthContext";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -45,12 +47,21 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <Link
-          href="#contact"
-          className="gold-border relative overflow-hidden rounded-full px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold-bright)] transition hover:shadow-[0_0_40px_rgba(212,175,90,0.25)]"
-        >
-          <span className="relative z-10">Member Access</span>
-        </Link>
+        {isAuthenticated && user ? (
+          <Link
+            href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+            className="gold-border relative overflow-hidden rounded-full px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold-bright)] transition hover:shadow-[0_0_40px_rgba(212,175,90,0.25)]"
+          >
+            <span className="relative z-10">Dashboard</span>
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className="gold-border relative overflow-hidden rounded-full px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold-bright)] transition hover:shadow-[0_0_40px_rgba(212,175,90,0.25)]"
+          >
+            <span className="relative z-10">Member Access</span>
+          </Link>
+        )}
       </div>
     </header>
   );

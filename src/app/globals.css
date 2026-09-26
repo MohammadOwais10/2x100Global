@@ -1,8 +1,213 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================================
+ * DESIGN TOKENS — 2x100 Global
+ * ----------------------------------------------------------------------------
+ * Dark-first emerald + gold. shadcn semantic contract retained so every
+ * ui/* primitive works unchanged; the palette values are ours.
+ *
+ * Three token tiers:
+ *   1. Palette    (--brand-500, --gold-*)   raw, never used directly
+ *   2. Semantic   (--primary, --card, ...)  shadcn contract, used by ui/*
+ *   3. Domain     (--profit, --rank-*)      finance-specific
+ * ========================================================================== */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
+
+  /* shadcn semantic contract */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Elevation surfaces */
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-hairline: var(--hairline);
+
+  /* Domain: financial semantics */
+  --color-profit: var(--profit);
+  --color-profit-muted: var(--profit-muted);
+  --color-loss: var(--loss);
+  --color-loss-muted: var(--loss-muted);
+  --color-pending: var(--pending);
+  --color-pending-muted: var(--pending-muted);
+  --color-info: var(--info);
+  --color-info-muted: var(--info-muted);
+
+  /* Brand ramp — gold */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+
+  /* Rank tiers LV1..LV7 */
+  --color-rank-1: var(--rank-1);
+  --color-rank-2: var(--rank-2);
+  --color-rank-3: var(--rank-3);
+  --color-rank-4: var(--rank-4);
+  --color-rank-5: var(--rank-5);
+  --color-rank-6: var(--rank-6);
+  --color-rank-7: var(--rank-7);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-pulse-ring: pulse-ring 2.4s var(--ease-out-expo) infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-aurora: aurora 18s ease-in-out infinite alternate;
+}
+
+/* ---------------------------------------------------------------- DARK (default) */
+:root,
+.dark {
+  color-scheme: dark;
+
+  /* Deep emerald-black base (our #030806 family) */
   --background: #030806;
   --foreground: #eef2ea;
+
+  --surface-1: #081a11;
+  --surface-2: #0b2417;
+  --surface-3: #102e1e;
+  --hairline: rgba(212, 175, 90, 0.10);
+
+  --card: #0a1d12;
+  --card-foreground: #eef2ea;
+  --popover: #0c2416;
+  --popover-foreground: #eef2ea;
+
+  /* Gold brand ramp (from --gold #d4af5a) */
+  --brand-50: #f7ead0;
+  --brand-100: #f0d48a;
+  --brand-200: #e8c76f;
+  --brand-300: #dcb45f;
+  --brand-400: #d4af5a;
+  --brand-500: #b8944a;
+  --brand-600: #96783a;
+  --brand-700: #6e5628;
+  --brand-800: #453517;
+  --brand-900: #241c0c;
+
+  --primary: #d4af5a;
+  --primary-foreground: #071208;
+
+  --secondary: #0d2a1a;
+  --secondary-foreground: #eef2ea;
+  --muted: #0b2417;
+  --muted-foreground: #93a493;
+  --accent: #12351f;
+  --accent-foreground: #eef2ea;
+
+  --destructive: oklch(0.64 0.215 22);
+  --destructive-foreground: oklch(0.99 0.002 20);
+
+  --border: rgba(212, 175, 90, 0.14);
+  --input: rgba(212, 175, 90, 0.20);
+  --ring: rgba(212, 175, 90, 0.6);
+
+  /* Financial semantics — profit is our emerald glow */
+  --profit: #2fbd77;
+  --profit-muted: rgba(47, 189, 119, 0.14);
+  --loss: oklch(0.66 0.215 12);
+  --loss-muted: oklch(0.66 0.215 12 / 14%);
+  --pending: #e0b040;
+  --pending-muted: rgba(224, 176, 64, 0.14);
+  --info: oklch(0.72 0.13 235);
+  --info-muted: oklch(0.72 0.13 235 / 14%);
+
+  --rank-1: oklch(0.7 0.03 265);
+  --rank-2: oklch(0.72 0.11 205);
+  --rank-3: oklch(0.75 0.14 165);
+  --rank-4: oklch(0.8 0.15 105);
+  --rank-5: oklch(0.81 0.15 75);
+  --rank-6: oklch(0.7 0.2 25);
+  --rank-7: oklch(0.68 0.21 310);
+
+  --chart-1: #d4af5a;
+  --chart-2: #2fbd77;
+  --chart-3: oklch(0.72 0.13 235);
+  --chart-4: #e0b040;
+  --chart-5: oklch(0.68 0.21 330);
+
+  --sidebar: #05130b;
+  --sidebar-foreground: #d5ded5;
+  --sidebar-primary: #d4af5a;
+  --sidebar-primary-foreground: #071208;
+  --sidebar-accent: #0c2617;
+  --sidebar-accent-foreground: #eef2ea;
+  --sidebar-border: rgba(212, 175, 90, 0.10);
+  --sidebar-ring: rgba(212, 175, 90, 0.6);
+
+  --radius: 0.75rem;
+
+  /* Glass recipe */
+  --glass-bg: rgba(10, 29, 18, 0.55);
+  --glass-border: rgba(212, 175, 90, 0.16);
+  --glass-blur: 20px;
+
+  --brand-muted-wash: rgba(26, 157, 92, 0.12);
+
+  --shadow-ambient: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.55);
+  --shadow-lifted: 0 2px 4px rgba(0, 0, 0, 0.35), 0 24px 48px -16px rgba(0, 0, 0, 0.65);
+  --shadow-brand: 0 8px 32px -8px rgba(212, 175, 90, 0.45);
+
+  /* Landing-page palette aliases (used by our marketing components) */
   --gold: #d4af5a;
   --gold-bright: #f0d48a;
   --gold-dim: #8a6b2e;
@@ -11,36 +216,393 @@
   --emerald-glow: #1a9d5c;
   --surface: rgba(8, 22, 14, 0.72);
   --line: rgba(212, 175, 90, 0.28);
+
+  /* Brand logo colors — emerald + gold */
+  --logo-navy-900: #02100a;
+  --logo-navy-800: #04180e;
+  --logo-navy-700: #062818;
+  --logo-navy-600: #0a3a22;
+  --logo-navy-500: #0f5c38;
+  --logo-navy-400: #157a4a;
+  --logo-navy-300: #1a9d5c;
+  --logo-gold-900: #6e5628;
+  --logo-gold-700: #96783a;
+  --logo-gold-500: #b8944a;
+  --logo-gold-400: #d4af5a;
+  --logo-gold-300: #e8c76f;
+  --logo-gold-200: #f0d48a;
+  --logo-gold-100: #f7ead0;
+
+  --color-logo-navy: var(--logo-navy-500);
+  --color-logo-gold: var(--logo-gold-400);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-body);
-  --font-display: var(--font-display);
+/* ---------------------------------------------------------------- LIGHT */
+.light {
+  color-scheme: light;
+
+  --background: #f5f7f2;
+  --foreground: #12241a;
+
+  --surface-1: #ffffff;
+  --surface-2: #eef2ea;
+  --surface-3: #e2e9de;
+  --hairline: rgba(18, 36, 26, 0.08);
+
+  --card: #ffffff;
+  --card-foreground: #12241a;
+  --popover: #ffffff;
+  --popover-foreground: #12241a;
+
+  --brand-50: #f7ead0;
+  --brand-100: #f0d48a;
+  --brand-200: #e8c76f;
+  --brand-300: #dcb45f;
+  --brand-400: #d4af5a;
+  --brand-500: #b8944a;
+  --brand-600: #96783a;
+  --brand-700: #6e5628;
+  --brand-800: #453517;
+  --brand-900: #241c0c;
+
+  --primary: #96783a;
+  --primary-foreground: #f5f7f2;
+
+  --secondary: #e6ece2;
+  --secondary-foreground: #12241a;
+  --muted: #eef2ea;
+  --muted-foreground: #4d5e50;
+  --accent: #dce8dc;
+  --accent-foreground: #12241a;
+
+  --destructive: oklch(0.55 0.225 22);
+  --destructive-foreground: oklch(0.99 0.002 20);
+
+  --border: rgba(18, 36, 26, 0.12);
+  --input: rgba(18, 36, 26, 0.16);
+  --ring: rgba(150, 120, 58, 0.45);
+
+  --profit: #0f7a45;
+  --profit-muted: rgba(15, 122, 69, 0.12);
+  --loss: oklch(0.55 0.21 12);
+  --loss-muted: oklch(0.55 0.21 12 / 12%);
+  --pending: #8a6b2e;
+  --pending-muted: rgba(138, 107, 46, 0.12);
+  --info: oklch(0.55 0.14 235);
+  --info-muted: oklch(0.55 0.14 235 / 12%);
+
+  --rank-1: oklch(0.55 0.02 265);
+  --rank-2: oklch(0.55 0.1 205);
+  --rank-3: oklch(0.53 0.13 165);
+  --rank-4: oklch(0.6 0.14 105);
+  --rank-5: oklch(0.62 0.15 68);
+  --rank-6: oklch(0.56 0.19 25);
+  --rank-7: oklch(0.55 0.2 310);
+
+  --chart-1: #b8944a;
+  --chart-2: #0f7a45;
+  --chart-3: oklch(0.55 0.14 235);
+  --chart-4: #8a6b2e;
+  --chart-5: oklch(0.56 0.2 330);
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #2e4034;
+  --sidebar-primary: #96783a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6ece2;
+  --sidebar-accent-foreground: #12241a;
+  --sidebar-border: rgba(18, 36, 26, 0.1);
+  --sidebar-ring: rgba(150, 120, 58, 0.45);
+
+  --radius: 0.75rem;
+
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(18, 36, 26, 0.09);
+  --glass-blur: 20px;
+
+  --brand-muted-wash: rgba(15, 92, 56, 0.08);
+
+  --shadow-ambient: 0 1px 2px rgba(18, 36, 26, 0.06), 0 8px 24px -8px rgba(18, 36, 26, 0.1);
+  --shadow-lifted: 0 2px 4px rgba(18, 36, 26, 0.06), 0 24px 48px -16px rgba(18, 36, 26, 0.16);
+  --shadow-brand: 0 8px 32px -8px rgba(212, 175, 90, 0.3);
+
+  --logo-navy-900: #02100a;
+  --logo-navy-800: #04180e;
+  --logo-navy-700: #062818;
+  --logo-navy-600: #0a3a22;
+  --logo-navy-500: #0f5c38;
+  --logo-navy-400: #157a4a;
+  --logo-navy-300: #1a9d5c;
+  --logo-gold-900: #6e5628;
+  --logo-gold-700: #96783a;
+  --logo-gold-500: #b8944a;
+  --logo-gold-400: #d4af5a;
+  --logo-gold-300: #e8c76f;
+  --logo-gold-200: #f0d48a;
+  --logo-gold-100: #f7ead0;
+
+  --color-logo-navy: var(--logo-navy-500);
+  --color-logo-gold: var(--logo-gold-400);
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Ambient emerald wash. Fixed attachment so it does not parallax on scroll. */
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, var(--brand-muted-wash), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(26, 157, 92, 0.07), transparent);
+    background-attachment: fixed;
+  }
+
+  /* Financial figures must never jitter as digits change during polling. */
+  .tabular,
+  table td,
+  table th {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  ::selection {
+    background: rgba(26, 157, 92, 0.45);
+    color: #fff;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--surface-3);
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+    background-clip: content-box;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
-}
+@layer components {
+  /* Frosted panel */
+  .glass {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border: 1px solid var(--glass-border);
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body), system-ui, sans-serif;
-}
+  .edge-light {
+    position: relative;
+  }
+  .edge-light::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(240, 212, 138, 0.35), transparent);
+    pointer-events: none;
+  }
 
-.font-display {
-  font-family: var(--font-display), system-ui, sans-serif;
-}
+  .text-gradient-brand {
+    background: linear-gradient(135deg, var(--logo-gold-300) 0%, var(--logo-gold-500) 45%, var(--logo-navy-300) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 
-::selection {
-  background: rgba(26, 157, 92, 0.45);
-  color: #fff;
+  .shadow-ambient {
+    box-shadow: var(--shadow-ambient);
+  }
+  .shadow-lifted {
+    box-shadow: var(--shadow-lifted);
+  }
+  .shadow-brand {
+    box-shadow: var(--shadow-brand);
+  }
+
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+    animation: shimmer 1.8s infinite;
+  }
+
+  /* Gold gradient text — the headline accent pulled straight from the logo. */
+  .text-gradient-gold {
+    background: linear-gradient(
+      120deg,
+      var(--logo-gold-200) 0%,
+      var(--logo-gold-400) 40%,
+      var(--logo-gold-100) 70%,
+      var(--logo-gold-300) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-pan 6s ease infinite;
+  }
+
+  .gold-ring {
+    position: relative;
+  }
+  .gold-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      130deg,
+      transparent 30%,
+      var(--logo-gold-400) 50%,
+      transparent 70%
+    );
+    background-size: 200% 200%;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    animation: gradient-pan 4s ease infinite;
+    pointer-events: none;
+  }
+  .gold-ring:hover::before {
+    opacity: 1;
+  }
+
+  .btn-gold-shimmer {
+    background: linear-gradient(
+      110deg,
+      var(--logo-gold-500) 0%,
+      var(--logo-gold-200) 45%,
+      var(--logo-gold-400) 55%,
+      var(--logo-gold-500) 100%
+    );
+    background-size: 220% auto;
+    animation: gradient-pan 4.5s ease infinite;
+  }
+
+  /* ------------------------------------------------------------------
+   * Landing-page utilities (our marketing theme — emerald + gold)
+   * ------------------------------------------------------------------ */
+  .font-display {
+    font-family: var(--font-display), system-ui, sans-serif;
+  }
+
+  .gold-text {
+    background: linear-gradient(
+      118deg,
+      #6b4f1d 0%,
+      #f0d48a 22%,
+      #fff6dc 38%,
+      #c9a24a 55%,
+      #f0d48a 72%,
+      #7a5a22 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gold-border {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(145deg, rgba(8, 22, 14, 0.92), rgba(4, 12, 8, 0.96))
+        padding-box,
+      linear-gradient(
+          135deg,
+          rgba(212, 175, 90, 0.15),
+          rgba(212, 175, 90, 0.65),
+          rgba(26, 157, 92, 0.35)
+        )
+        border-box;
+  }
+
+  .panel-glass {
+    background: linear-gradient(
+      155deg,
+      rgba(12, 34, 22, 0.78) 0%,
+      rgba(6, 18, 12, 0.55) 100%
+    );
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--line);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 24px 80px rgba(0, 0, 0, 0.45);
+  }
+
+  .hero-glow {
+    background:
+      radial-gradient(
+        900px 520px at 72% 18%,
+        rgba(26, 157, 92, 0.22),
+        transparent 62%
+      ),
+      radial-gradient(
+        680px 420px at 12% 72%,
+        rgba(212, 175, 90, 0.12),
+        transparent 58%
+      ),
+      radial-gradient(
+        1200px 800px at 50% 110%,
+        rgba(6, 40, 24, 0.9),
+        transparent 70%
+      ),
+      #030806;
+  }
+
+  .shimmer-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(240, 212, 138, 0.35),
+      transparent
+    );
+    animation: shimmer-line 4.5s ease-in-out infinite;
+  }
+
+  .float-soft {
+    animation: float-soft 7s ease-in-out infinite;
+  }
+
+  .marquee-track {
+    animation: marquee 28s linear infinite;
+  }
 }
 
 .grain {
@@ -52,69 +614,13 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.gold-text {
-  background: linear-gradient(
-    118deg,
-    #6b4f1d 0%,
-    #f0d48a 22%,
-    #fff6dc 38%,
-    #c9a24a 55%,
-    #f0d48a 72%,
-    #7a5a22 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.gold-border {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(145deg, rgba(8, 22, 14, 0.92), rgba(4, 12, 8, 0.96))
-      padding-box,
-    linear-gradient(
-        135deg,
-        rgba(212, 175, 90, 0.15),
-        rgba(212, 175, 90, 0.65),
-        rgba(26, 157, 92, 0.35)
-      )
-      border-box;
-}
-
-.panel-glass {
-  background: linear-gradient(
-    155deg,
-    rgba(12, 34, 22, 0.78) 0%,
-    rgba(6, 18, 12, 0.55) 100%
-  );
-  backdrop-filter: blur(18px);
-  border: 1px solid var(--line);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-    0 24px 80px rgba(0, 0, 0, 0.45);
-}
-
-.hero-glow {
-  background:
-    radial-gradient(
-      900px 520px at 72% 18%,
-      rgba(26, 157, 92, 0.22),
-      transparent 62%
-    ),
-    radial-gradient(
-      680px 420px at 12% 72%,
-      rgba(212, 175, 90, 0.12),
-      transparent 58%
-    ),
-    radial-gradient(
-      1200px 800px at 50% 110%,
-      rgba(6, 40, 24, 0.9),
-      transparent 70%
-    ),
-    #030806;
-}
-
 @keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shimmer-line {
   0% {
     transform: translateX(-120%);
   }
@@ -123,17 +629,56 @@ body {
   }
 }
 
-.shimmer-line::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(240, 212, 138, 0.35),
-    transparent
-  );
-  animation: shimmer 4.5s ease-in-out infinite;
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 90, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(212, 175, 90, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 90, 0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes aurora {
+  0% {
+    transform: translate3d(-6%, -4%, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(6%, 4%, 0) scale(1.15);
+  }
+}
+
+@keyframes gradient-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
 }
 
 @keyframes float-soft {
@@ -146,19 +691,58 @@ body {
   }
 }
 
-.float-soft {
-  animation: float-soft 7s ease-in-out infinite;
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
 }
 
-.marquee-track {
-  animation: marquee 28s linear infinite;
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-@keyframes marquee {
+@keyframes ticker-scroll {
   from {
     transform: translateX(0);
   }
   to {
     transform: translateX(-50%);
+  }
+}
+
+@keyframes news-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-news-scroll {
+  animation: news-scroll 20s linear infinite;
+}
+
+.animate-news-scroll:hover {
+  animation-play-state: paused;
+}
+
+/* Respect the OS setting. Framer Motion reads this too via useReducedMotion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
