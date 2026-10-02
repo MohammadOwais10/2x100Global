@@ -24,6 +24,8 @@ export interface CreateWithdrawalRequest {
    * on it.
    */
   walletType: WithdrawalWalletType;
+  /** Security password set in profile — verified on the backend before the request is accepted. */
+  withdrawPassword: string;
 }
 
 export interface WithdrawalParams {

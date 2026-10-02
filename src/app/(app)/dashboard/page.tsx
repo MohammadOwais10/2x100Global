@@ -22,7 +22,7 @@ import { PageHeader } from "@/components/common/page-header";
 import { ShareReferralButton } from "@/components/common/share-referral-button";
 import { SponsorTradeBonus } from "@/components/common/sponsor-trade-bonus";
 import { StatCard } from "@/components/common/stat-card";
-import { TransferToPrincipal } from "@/components/common/transfer-to-principal";
+import { TradePlanProgress } from "@/components/common/trade-plan-progress";
 import { DashboardSlider, NewsTicker } from "@/components/common/dashboard-slider";
 import { SessionCodeCard } from "@/features/trading/components/session-code-card";
 import LiveTradingChart from "@/components/home/live-trading-chart";
@@ -235,9 +235,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* 4. Transfer to compound */}
+      {/* 4. Trade plan progress */}
       <section className="mb-4 relative overflow-hidden">
-        <TransferToPrincipal />
+        <TradePlanProgress />
       </section>
 
     </>

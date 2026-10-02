@@ -88,6 +88,10 @@ export interface User {
   deletedAt: ISODateString | null;
   sponsorTradeBonusExpiry: ISODateString | null;
   sponsorTradeBonusRate: number | null;
+  /** Whether the user has set a withdraw password. The hash itself is never exposed. */
+  withdrawPasswordSet?: boolean;
+  /** While non-null, withdrawals are blocked until this timestamp (24h after the last password change). */
+  withdrawLockedUntil?: ISODateString | null;
 
   sponsor?: User | null;
   referrals?: User[];
@@ -266,6 +270,14 @@ export interface TradeStatistics {
   totalAdminCommission: number;
   completedTrades: number;
   pendingTrades: number;
+  /** Progress through the fixed trade plan; drives the Principal withdrawal penalty. */
+  tradePlan: {
+    totalTrades: number;
+    /** Completed trades needed to waive the Principal early-exit penalty. */
+    penaltyFreeAt: number;
+    completionPercent: number;
+    penaltyFree: boolean;
+  };
 }
 
 export interface TradeSessionResult {
@@ -524,6 +536,8 @@ export interface UserDashboard {
     isContentCreator: boolean;
     sponsorTradeBonusExpiry: ISODateString | null;
     sponsorTradeBonusRate: number | null;
+    withdrawPasswordSet: boolean;
+    withdrawLockedUntil: ISODateString | null;
     lastLogin: ISODateString | null;
     createdAt: ISODateString;
   };
@@ -649,6 +663,7 @@ export interface CreatePoolBonusRequestPayload {
   requestedAmount: number;
   destinationAddress?: string;
   network?: string;
+  withdrawPassword: string;
 }
 
 /** Body for PUT /admin/pool-bonus-requests/:id/update. */

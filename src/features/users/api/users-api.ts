@@ -22,6 +22,16 @@ export interface UpdateProfileRequest {
   walletAddress?: string;
 }
 
+export interface SetWithdrawPasswordRequest {
+  withdrawPassword: string;
+}
+
+export interface SetWithdrawPasswordResponse {
+  withdrawPasswordSet: boolean;
+  /** Withdrawals are blocked until this timestamp (24h after the change). */
+  withdrawLockedUntil: string | null;
+}
+
 export interface ListUsersParams {
   page?: number;
   limit?: number;
@@ -49,6 +59,25 @@ export const usersApi = baseApi.injectEndpoints({
           /* surfaced by the form */
         }
       },
+      invalidatesTags: ["Profile", "UserDashboard"],
+    }),
+
+    /**
+     * Sets or changes the withdraw password. Any change restarts the 24h
+     * withdrawal lock — all withdraw flows are blocked until it expires.
+     */
+    setWithdrawPassword: builder.mutation<
+      SetWithdrawPasswordResponse,
+      SetWithdrawPasswordRequest
+    >({
+      query: (body) => ({
+        url: bff("/users/withdraw-password"),
+        method: "POST",
+        body,
+      }),
+      transformResponse: (
+        response: ApiSuccess<SetWithdrawPasswordResponse>,
+      ) => response.data,
       invalidatesTags: ["Profile", "UserDashboard"],
     }),
 
@@ -107,6 +136,7 @@ export const usersApi = baseApi.injectEndpoints({
 
 export const {
   useUpdateProfileMutation,
+  useSetWithdrawPasswordMutation,
   useUserDashboardQuery,
   useToggleAutoTradeMutation,
   useListUsersQuery,

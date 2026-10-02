@@ -125,8 +125,8 @@ export function multiplyByInt(
  * Apply a percentage expressed in basis points to avoid float multipliers.
  * 250 bps = 2.50%. Truncates toward zero.
  *
- * Backend fee percentages (WITHDRAWAL_FEE_PERCENTAGE=2) arrive as whole
- * percents — convert with `percentToBps(2)` before calling.
+ * Backend fee percentages arrive as whole percents — e.g. convert the 15%
+ * withdrawal fee with `percentToBps(15)` before calling.
  */
 export function applyBps(units: bigint, bps: number | bigint): bigint {
   return (units * BigInt(bps)) / 10_000n;

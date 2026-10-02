@@ -1,5 +1,4 @@
 import { baseApi, bff } from "@/lib/api/base-api";
-import { MONEY_MOVEMENT_TAGS, listTag } from "@/lib/api/tags";
 import type { ApiSuccess, DecimalString } from "@/types/api";
 import type { Wallet, WalletSummary, WalletSummaryEntry } from "@/types/models";
 import { ALL_WALLET_TYPES, type WalletType } from "@/types/enums";
@@ -17,21 +16,6 @@ import { ALL_WALLET_TYPES, type WalletType } from "@/types/enums";
  * absent" from "typo'd key". `transformResponse` normalises it once into
  * `WalletSummary` and nothing downstream ever sees the raw form.
  */
-
-export interface TransferRequest {
-  fromWalletType: WalletType;
-  toWalletType: WalletType;
-  /**
-   * Whole-token amount as a decimal string. The backend's Zod schema is
-   * `z.string().refine(parseFloat)` and then the controller calls `parseFloat`.
-   */
-  amount: string;
-}
-
-export interface TransferResult {
-  fromWallet: Wallet;
-  toWallet: Wallet;
-}
 
 export const walletApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -73,20 +57,6 @@ export const walletApi = baseApi.injectEndpoints({
         { type: "Wallet" as const, id: type },
       ],
     }),
-
-    transfer: builder.mutation<TransferResult, TransferRequest>({
-      query: (body) => ({
-        url: bff("/wallets/transfer"),
-        method: "POST",
-        body,
-      }),
-      transformResponse: (response: ApiSuccess<TransferResult>) =>
-        response.data,
-      // A transfer is a balance change on both sides plus two ledger rows, so
-      // it invalidates the full money-movement set rather than just the two
-      // wallets involved.
-      invalidatesTags: [...MONEY_MOVEMENT_TAGS, listTag("Wallet")],
-    }),
   }),
   overrideExisting: false,
 });
@@ -95,5 +65,4 @@ export const {
   useWalletSummaryQuery,
   useWalletQuery,
   useWalletBalanceQuery,
-  useTransferMutation,
 } = walletApi;
