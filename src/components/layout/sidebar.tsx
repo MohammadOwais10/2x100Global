@@ -13,7 +13,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Brand } from "./brand";
+import { BrandMark } from "./brand";
+import { ROUTES } from "@/config/routes";
 import { isNavItemActive, type NavItem, type NavSection } from "@/config/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -70,13 +71,14 @@ export function Sidebar({
       )}
       data-collapsed={collapsed}
     >
-      <div
-        className={cn(
-          "flex h-16 shrink-0 items-center gap-2 px-4",
-          collapsed && "justify-center px-0",
-        )}
-      >
-        <Brand collapsed={collapsed} />
+      <div className="flex h-16 shrink-0 items-center justify-start px-4">
+        <Link
+          href={ROUTES.home}
+          className="group rounded-lg outline-none focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2"
+          aria-label="2X100 Global — home"
+        >
+          <BrandMark className="size-40 transition-transform duration-300 group-hover:scale-105" />
+        </Link>
       </div>
 
       <ScrollArea className="flex-1 overflow-hidden">
