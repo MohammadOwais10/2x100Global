@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, KeyRound } from "lucide-react";
-import { motion } from "framer-motion";
+import { CheckCircle2, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -14,15 +13,16 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AuthFieldLabel, AuthInput, AuthInputShell } from "./auth-field";
+import { OtpInput } from "./otp-input";
 import { PasswordInput } from "./password-input";
 import {
   AuthFormError,
   AuthFormHeader,
+  AuthStatus,
   AuthSubmitButton,
 } from "./auth-form-shell";
 import { useResetPasswordMutation } from "../api/auth-api";
@@ -67,23 +67,13 @@ export function ResetPasswordForm() {
 
   if (done) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      <AuthStatus
+        icon={CheckCircle2}
+        title="Password updated"
+        description="For your security, you've been signed out on all other devices. Sign in with your new password to continue."
       >
-        <div className="border-profit/25 bg-profit-muted text-profit mb-6 grid size-12 place-items-center rounded-2xl border">
-          <CheckCircle2 className="size-6" strokeWidth={1.75} />
-        </div>
-
-        <AuthFormHeader
-          title="Password updated"
-          description="For your security, you've been signed out on all other devices. Sign in with your new password to continue."
-        />
-
         <Button
-          className="w-full"
-          size="lg"
+          className="h-12 w-full rounded-xl text-[0.8125rem]"
           onClick={() => {
             router.replace(ROUTES.login);
             router.refresh();
@@ -91,19 +81,17 @@ export function ResetPasswordForm() {
         >
           Continue to sign in
         </Button>
-      </motion.div>
+      </AuthStatus>
     );
   }
 
   return (
     <>
-      <div className="border-border/70 bg-surface-2 text-muted-foreground mb-6 grid size-12 place-items-center rounded-2xl border">
-        <KeyRound className="size-6" strokeWidth={1.75} />
-      </div>
-
       <AuthFormHeader
-        title="Choose a new password"
-        description="Enter the 6-digit code we sent to your email, then set a new password."
+        eyebrow="Account recovery"
+        title="Choose a new"
+        accent="password."
+        description="Enter the 6-digit code we emailed you, then set a new password."
       />
 
       <AuthFormError error={formError} />
@@ -114,11 +102,13 @@ export function ResetPasswordForm() {
             control={form.control}
             name="email"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Email address</AuthFieldLabel>
+
+                <AuthInputShell icon={Mail}>
+                  <AuthInput
                     {...field}
+                    hasIcon
                     type="email"
                     inputMode="email"
                     autoComplete="email"
@@ -126,7 +116,8 @@ export function ResetPasswordForm() {
                     placeholder="you@example.com"
                     aria-invalid={Boolean(fieldState.error)}
                   />
-                </FormControl>
+                </AuthInputShell>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -136,19 +127,19 @@ export function ResetPasswordForm() {
             control={form.control}
             name="otp"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Reset code</FormLabel>
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Reset code</AuthFieldLabel>
+
                 <FormControl>
-                  <Input
+                  <OtpInput
                     {...field}
-                    autoFocus
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="6-digit code from your email"
-                    className="font-mono"
-                    aria-invalid={Boolean(fieldState.error)}
+                    onChange={field.onChange}
+                    placeholder="000000"
+                    aria-label="6-digit reset code"
+                    invalid={Boolean(fieldState.error)}
                   />
                 </FormControl>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -158,17 +149,20 @@ export function ResetPasswordForm() {
             control={form.control}
             name="newPassword"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>New password</FormLabel>
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>New password</AuthFieldLabel>
+
                 <FormControl>
                   <PasswordInput
                     {...field}
+                    icon={KeyRound}
                     autoComplete="new-password"
                     placeholder="At least 8 characters"
                     showStrength
                     invalid={Boolean(fieldState.error)}
                   />
                 </FormControl>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -178,32 +172,37 @@ export function ResetPasswordForm() {
             control={form.control}
             name="confirmPassword"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Confirm new password</FormLabel>
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Confirm new password</AuthFieldLabel>
+
                 <FormControl>
                   <PasswordInput
                     {...field}
+                    icon={KeyRound}
                     autoComplete="new-password"
                     placeholder="Re-enter your new password"
                     invalid={Boolean(fieldState.error)}
                   />
                 </FormControl>
+
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <AuthSubmitButton loading={submitting} loadingLabel="Updating…">
-            Update password
-          </AuthSubmitButton>
+          <div className="pt-1">
+            <AuthSubmitButton loading={submitting} loadingLabel="Updating…">
+              Update password
+            </AuthSubmitButton>
+          </div>
         </form>
       </Form>
 
-      <p className="text-muted-foreground mt-6 text-center text-sm">
+      <p className="text-muted-foreground mt-8 text-center text-sm">
         Didn&apos;t get a code?{" "}
         <Link
           href={ROUTES.forgotPassword}
-          className="text-foreground font-medium underline-offset-4 hover:underline"
+          className="text-foreground font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
         >
           Request a new one
         </Link>

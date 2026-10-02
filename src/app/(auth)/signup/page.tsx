@@ -12,7 +12,22 @@ export const metadata: Metadata = {
 // Suspense is required because SignupForm reads ?ref= via useSearchParams().
 export default function SignupPage() {
   return (
-    <Suspense fallback={<AuthFormSkeleton fields={4} />}>
+    <Suspense
+      fallback={
+        <AuthFormSkeleton
+          rows={[
+            "field",
+            "field",
+            "strength",
+            "field",
+            "field",
+            "field",
+            "field",
+          ]}
+          checkbox
+        />
+      }
+    >
       <SignupForm />
     </Suspense>
   );

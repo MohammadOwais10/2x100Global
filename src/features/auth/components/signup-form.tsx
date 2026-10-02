@@ -1,24 +1,20 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Gift } from "lucide-react";
+import { Gift, Globe2, LockKeyhole, Mail, Phone, Ticket, User } from "lucide-react";
 import { motion } from "framer-motion";
 
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { AuthFieldLabel, AuthInput, AuthInputShell } from "./auth-field";
 import { PasswordInput } from "./password-input";
 import {
   AuthFormError,
@@ -70,7 +66,6 @@ export function SignupForm() {
       phone: "",
       country: "",
       referralCode: referralFromUrl,
-      acceptTerms: false as unknown as true,
     },
   });
 
@@ -91,23 +86,15 @@ export function SignupForm() {
   return (
     <>
       <AuthFormHeader
-        title="Create your account"
-        description="Start with a USDT deposit and let automated sessions do the work."
+        eyebrow="Get started"
+        title="Create your"
+        accent="account."
+        description="Open a member account, deposit USDT, and let the automated sessions run."
       />
 
-      {hasReferral && (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="border-primary/25 bg-primary/8 mb-5 flex items-center gap-2.5 rounded-lg border px-3.5 py-2.5"
-        >
-          <Gift className="text-primary size-4 shrink-0" />
-          <p className="text-sm">
-            Invited with code{" "}
-            <span className="font-mono font-semibold">{referralFromUrl}</span>
-          </p>
-        </motion.div>
-      )}
+      {hasReferral ? (
+        <ReferralBanner code={referralFromUrl} />
+      ) : null}
 
       <AuthFormError error={formError} />
 
@@ -117,17 +104,20 @@ export function SignupForm() {
             control={form.control}
             name="name"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Full name</FormLabel>
-                <FormControl>
-                  <Input
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Full name</AuthFieldLabel>
+
+                <AuthInputShell icon={User}>
+                  <AuthInput
                     {...field}
+                    hasIcon
                     autoComplete="name"
                     autoFocus
                     placeholder="Alex Morgan"
                     aria-invalid={Boolean(fieldState.error)}
                   />
-                </FormControl>
+                </AuthInputShell>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -137,18 +127,21 @@ export function SignupForm() {
             control={form.control}
             name="email"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Email address</AuthFieldLabel>
+
+                <AuthInputShell icon={Mail}>
+                  <AuthInput
                     {...field}
+                    hasIcon
                     type="email"
                     inputMode="email"
                     autoComplete="email"
                     placeholder="you@example.com"
                     aria-invalid={Boolean(fieldState.error)}
                   />
-                </FormControl>
+                </AuthInputShell>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -158,17 +151,20 @@ export function SignupForm() {
             control={form.control}
             name="password"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Password</AuthFieldLabel>
+
                 <FormControl>
                   <PasswordInput
                     {...field}
+                    icon={LockKeyhole}
                     autoComplete="new-password"
                     placeholder="At least 8 characters"
                     showStrength
                     invalid={Boolean(fieldState.error)}
                   />
                 </FormControl>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -178,130 +174,115 @@ export function SignupForm() {
             control={form.control}
             name="confirmPassword"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Confirm password</AuthFieldLabel>
+
                 <FormControl>
                   <PasswordInput
                     {...field}
+                    icon={LockKeyhole}
                     autoComplete="new-password"
                     placeholder="Re-enter your password"
                     invalid={Boolean(fieldState.error)}
                   />
                 </FormControl>
+
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Phone</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    placeholder="Mobile number"
-                    aria-invalid={Boolean(fieldState.error)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Hairline + micro-label, so it is obvious the remaining fields are
+              skippable rather than another required block. */}
+          <div className="flex items-center gap-4 pt-1.5">
+            <span className="bg-border/70 h-px flex-1" />
+            <span className="text-muted-foreground/70 text-[0.6875rem] font-medium tracking-[0.2em] uppercase">
+              Optional
+            </span>
+            <span className="bg-border/70 h-px flex-1" />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="country"
-            render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Country</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    autoComplete="country-name"
-                    placeholder="United States"
-                    aria-invalid={Boolean(fieldState.error)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field, fieldState }) => (
+                <FormItem className="space-y-2">
+                  <AuthFieldLabel>Phone</AuthFieldLabel>
+
+                  <AuthInputShell icon={Phone}>
+                    <AuthInput
+                      {...field}
+                      hasIcon
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="Mobile number"
+                      aria-invalid={Boolean(fieldState.error)}
+                    />
+                  </AuthInputShell>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field, fieldState }) => (
+                <FormItem className="space-y-2">
+                  <AuthFieldLabel>Country</AuthFieldLabel>
+
+                  <AuthInputShell icon={Globe2}>
+                    <AuthInput
+                      {...field}
+                      hasIcon
+                      autoComplete="country-name"
+                      placeholder="United States"
+                      aria-invalid={Boolean(fieldState.error)}
+                    />
+                  </AuthInputShell>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
             name="referralCode"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Referral code</FormLabel>
-                <FormControl>
-                  <Input
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Referral code</AuthFieldLabel>
+
+                <AuthInputShell icon={Ticket}>
+                  <AuthInput
                     {...field}
+                    hasIcon
                     placeholder="ABCD1234"
                     maxLength={8}
                     autoCapitalize="characters"
                     spellCheck={false}
-                    className="font-mono uppercase"
+                    className="font-mono tracking-[0.18em] uppercase"
                     aria-invalid={Boolean(fieldState.error)}
                   />
-                </FormControl>
-                <FormDescription>
-                  8 characters, from whoever invited you.
-                </FormDescription>
+                </AuthInputShell>
+
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="acceptTerms"
-            render={({ field, fieldState }) => (
-              <FormItem className="space-y-2">
-                <div className="flex items-start gap-2.5">
-                  <FormControl>
-                    <Checkbox
-                      id="acceptTerms"
-                      checked={Boolean(field.value)}
-                      onCheckedChange={field.onChange}
-                      aria-invalid={Boolean(fieldState.error)}
-                      className="mt-0.5"
-                    />
-                  </FormControl>
-                  <label
-                    htmlFor="acceptTerms"
-                    className="text-muted-foreground cursor-pointer text-sm leading-relaxed"
-                  >
-                    I agree to the{" "}
-                    <Link
-                      href="/legal/terms"
-                      className="text-foreground underline-offset-4 hover:underline"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      href="/legal/privacy"
-                      className="text-foreground underline-offset-4 hover:underline"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </label>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <AuthSubmitButton loading={submitting} loadingLabel="Creating account…" className="w-full">
-            Create account
-          </AuthSubmitButton>
+          <div className="pt-1.5">
+            <AuthSubmitButton
+              loading={submitting}
+              loadingLabel="Creating account…"
+            >
+              Create account
+            </AuthSubmitButton>
+          </div>
         </form>
       </Form>
 
@@ -311,5 +292,38 @@ export function SignupForm() {
         href={ROUTES.login}
       />
     </>
+  );
+}
+
+/**
+ * Confirms a referral landed, so a member arriving from `/ref/<code>` can see
+ * the code was actually captured before they type anything.
+ */
+function ReferralBanner({ code }: { code: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="mb-6 overflow-hidden rounded-2xl border border-primary/25 bg-primary/8 backdrop-blur-sm"
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(240,212,138,0.6),transparent)]"
+      />
+
+      <div className="flex items-center gap-3.5 px-4 py-3.5">
+        <span className="border-primary/25 bg-primary/12 text-primary grid size-9 shrink-0 place-items-center rounded-xl border">
+          <Gift className="size-4" strokeWidth={1.9} aria-hidden="true" />
+        </span>
+
+        <p className="text-[0.8125rem] leading-relaxed">
+          <span className="text-muted-foreground">Invited with code</span>{" "}
+          <span className="text-primary font-mono font-semibold tracking-[0.14em]">
+            {code}
+          </span>
+        </p>
+      </div>
+    </motion.div>
   );
 }

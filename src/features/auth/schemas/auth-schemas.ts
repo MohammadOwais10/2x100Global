@@ -125,10 +125,6 @@ export const signupSchema = z
       ])
       .optional(),
     referralCode: z.union([referralCode, z.literal("")]).optional(),
-    /** Client-only. */
-    acceptTerms: z.literal(true, {
-      message: "You must accept the terms to continue",
-    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -147,7 +143,7 @@ export type SignupFormOutput = z.output<typeof signupSchema>;
  * optional govId upload). Empty optionals are omitted entirely rather than
  * sent as "" — the backend's optional fields reject empty strings.
  *
- * `confirmPassword` and `acceptTerms` are client-only and never sent.
+ * `confirmPassword` is client-only and never sent.
  */
 export function toSignupRequest(values: SignupFormOutput): FormData {
   const form = new FormData();

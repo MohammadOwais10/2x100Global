@@ -17,7 +17,9 @@ export const metadata: Metadata = {
  */
 export default function LoginPage() {
   return (
-    <Suspense fallback={<AuthFormSkeleton fields={2} />}>
+    <Suspense
+      fallback={<AuthFormSkeleton rows={["field", "field"]} checkbox />}
+    >
       <LoginForm />
     </Suspense>
   );
