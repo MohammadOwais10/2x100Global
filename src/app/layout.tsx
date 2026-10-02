@@ -14,7 +14,7 @@ const display = Syne({
 });
 
 const body = Manrope({
-  variable: "--font-sans",
+  variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
@@ -80,10 +80,12 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className="dark h-full" suppressHydrationWarning>
-      <body
-        className={`${display.variable} ${body.variable} ${mono.variable} min-h-dvh antialiased`}
-      >
+    <html
+      lang="en"
+      className={`dark h-full ${display.variable} ${body.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-dvh antialiased">
         <div className="grain" aria-hidden />
         <Providers preloadedState={preloadedState}>{children}</Providers>
       </body>
