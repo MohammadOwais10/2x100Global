@@ -22,7 +22,7 @@ import { PageHeader } from "@/components/common/page-header";
 import { ShareReferralButton } from "@/components/common/share-referral-button";
 import { SponsorTradeBonus } from "@/components/common/sponsor-trade-bonus";
 import { StatCard } from "@/components/common/stat-card";
-import { TransferToPrincipal } from "@/components/common/transfer-to-principal";
+import { TradePlanProgress } from "@/components/common/trade-plan-progress";
 import { DashboardSlider, NewsTicker } from "@/components/common/dashboard-slider";
 import { SessionCodeCard } from "@/features/trading/components/session-code-card";
 import LiveTradingChart from "@/components/home/live-trading-chart";
@@ -146,9 +146,99 @@ export default function DashboardPage() {
       {/* 2b. Live trading chart from home page */}
       <LiveTradingChart minimal />
 
+      {/* 3. Referral + deposit address */}
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Network className="size-5 text-(--logo-gold-300)" />
+              Your Referral Link
+            </CardTitle>
+            <CardDescription>
+              Share this link to invite new members. They land on signup with
+              your code pre-filled.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Input
+              value={referralLink}
+              readOnly
+              aria-label="Referral link"
+              className="font-mono text-sm"
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={copyReferral}
+                variant={copiedRef ? "secondary" : "default"}
+                className="shrink-0"
+              >
+                {copiedRef ? (
+                  <>
+                    <Check className="mr-2 size-4" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 size-4" />
+                    Copy
+                  </>
+                )}
+              </Button>
+              <ShareReferralButton referralLink={referralLink} />
+            </div>
+          </CardContent>
+        </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wallet className="size-5 text-(--logo-gold-300)" />
+              Deposit Wallet Address
+            </CardTitle>
+            <CardDescription>
+              Send USDT to this platform address, then submit the transaction in
+              the deposit form.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Input
+              value={
+                depositAddress
+                  ? shortenString(depositAddress, 10, 8)
+                  : depositWallet.isLoading
+                    ? "Loading address…"
+                    : "Not configured yet"
+              }
+              readOnly
+              aria-label="Deposit wallet address"
+              className="font-mono text-sm"
+            />
+            <Button
+              onClick={copyAddress}
+              disabled={!depositAddress}
+              variant={copiedAddr ? "secondary" : "default"}
+              className="shrink-0"
+            >
+              {copiedAddr ? (
+                <>
+                  <Check className="mr-2 size-4" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="mr-2 size-4" />
+                  Copy
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
- 
+      {/* 4. Trade plan progress */}
+      <section className="mb-4 relative overflow-hidden">
+        <TradePlanProgress />
+      </section>
 
     </>
   );

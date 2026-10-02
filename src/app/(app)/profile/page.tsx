@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarDays, Mail, Save, ShieldCheck, UserRound, Copy, Check, IdCard } from "lucide-react";
+import { CalendarDays, KeyRound, Mail, Save, ShieldCheck, UserRound, Copy, Check, IdCard } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -28,10 +28,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileQuery } from "@/features/auth/api/auth-api";
 import { useFormSubmit } from "@/features/auth/hooks/use-form-submit";
-import { useUpdateProfileMutation } from "@/features/users/api/users-api";
+import { useSetWithdrawPasswordMutation, useUpdateProfileMutation } from "@/features/users/api/users-api";
 import { normalizeError } from "@/lib/api/errors";
 import { formatDateTime, humanizeEnum } from "@/lib/utils/format";
 import { ROUTES } from "@/config/routes";
@@ -51,6 +52,38 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ProfilePage() {
   const { data: profile, error, isLoading, refetch } = useProfileQuery();
   const [updateProfile] = useUpdateProfileMutation();
+  const [setWithdrawPassword, { isLoading: savingWithdrawPw }] =
+    useSetWithdrawPasswordMutation();
+  const [withdrawPw1, setWithdrawPw1] = useState("");
+  const [withdrawPw2, setWithdrawPw2] = useState("");
+  const withdrawLockedUntil = profile?.withdrawLockedUntil
+    ? new Date(profile.withdrawLockedUntil)
+    : null;
+
+  async function submitWithdrawPassword(e: FormEvent) {
+    e.preventDefault();
+    if (!/^(?=.*[a-zA-Z])(?=.*\d).{8,}$/.test(withdrawPw1)) {
+      return toast.error(
+        "Withdraw password must be 8+ characters with letters and numbers.",
+      );
+    }
+    if (withdrawPw1 !== withdrawPw2) {
+      return toast.error("Passwords do not match.");
+    }
+    try {
+      await setWithdrawPassword({ withdrawPassword: withdrawPw1 }).unwrap();
+      toast.success(
+        "Withdraw password saved. Withdrawals are locked for the next 24 hours.",
+      );
+      setWithdrawPw1("");
+      setWithdrawPw2("");
+      refetch();
+    } catch (err) {
+      toast.error(
+        normalizeError(err as Parameters<typeof normalizeError>[0])?.message,
+      );
+    }
+  }
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     mode: "onTouched",
@@ -247,6 +280,86 @@ export default function ProfilePage() {
                 </Button>
                 <ShareReferralButton referralLink={referralLink} />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <KeyRound className="size-5 text-(--logo-gold-300)" />
+                Withdraw Password
+              </CardTitle>
+              <CardDescription>
+                Required on every withdrawal and pool bonus request. Changing
+                it locks withdrawals for 24 hours.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading || !profile ? (
+                <Skeleton className="h-24 w-full" />
+              ) : (
+                <>
+                  <div className="mb-4 space-y-1 text-sm">
+                    <p>
+                      Status:{" "}
+                      {profile.withdrawPasswordSet ? (
+                        <span className="text-profit font-medium">Set</span>
+                      ) : (
+                        <span className="text-amber-600 font-medium">
+                          Not set — withdrawals are unavailable
+                        </span>
+                      )}
+                    </p>
+                    {withdrawLockedUntil ? (
+                      <p className="text-amber-600">
+                        Withdrawals locked until{" "}
+                        {withdrawLockedUntil.toLocaleString()}
+                      </p>
+                    ) : null}
+                  </div>
+                  <form
+                    onSubmit={submitWithdrawPassword}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="withdraw-pw-new">
+                        {profile.withdrawPasswordSet
+                          ? "New withdraw password"
+                          : "Withdraw password"}
+                      </Label>
+                      <Input
+                        id="withdraw-pw-new"
+                        type="password"
+                        autoComplete="new-password"
+                        value={withdrawPw1}
+                        onChange={(e) => setWithdrawPw1(e.target.value)}
+                        required
+                        minLength={8}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="withdraw-pw-confirm">Confirm password</Label>
+                      <Input
+                        id="withdraw-pw-confirm"
+                        type="password"
+                        autoComplete="new-password"
+                        value={withdrawPw2}
+                        onChange={(e) => setWithdrawPw2(e.target.value)}
+                        required
+                        minLength={8}
+                      />
+                    </div>
+                    <Button type="submit" disabled={savingWithdrawPw}>
+                      <Save className="size-4" />
+                      {savingWithdrawPw
+                        ? "Saving…"
+                        : profile.withdrawPasswordSet
+                          ? "Update withdraw password"
+                          : "Set withdraw password"}
+                    </Button>
+                  </form>
+                </>
+              )}
             </CardContent>
           </Card>
 

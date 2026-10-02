@@ -39,6 +39,8 @@ import { Money } from "@/components/common/money";
 import { PageHeader } from "@/components/common/page-header";
 import { ShareReferralButton } from "@/components/common/share-referral-button";
 import { StatCard } from "@/components/common/stat-card";
+import { TradePlanProgress } from "@/components/common/trade-plan-progress";
+import { WithdrawPasswordDialog } from "@/components/common/withdraw-password-dialog";
 import { RankBadge, StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,7 +79,6 @@ import {
 } from "@/features/portal/api/portal-api";
 import { SessionCodeCard } from "@/features/trading/components/session-code-card";
 import { useWalletSummaryQuery } from "@/features/wallet/api/wallet-api";
-import { TransferToPrincipal } from "@/components/common/transfer-to-principal";
 import {
   useCreateWithdrawalMutation,
   useWithdrawalsQuery,
@@ -216,9 +217,6 @@ function WalletPage() {
         ))}
        
       </div>
-       <div className="mt-6 w-full relative overflow-hidden">
-          <TransferToPrincipal />
-        </div>
       <ErrorText error={query.error} />
     </>
   );
@@ -420,23 +418,29 @@ function WithdrawPage() {
   const [walletType, setWalletType] =
     useState<keyof typeof WithdrawalWalletType>("PRINCIPAL");
   const isPrincipal = walletType === "PRINCIPAL";
-  async function submit(e: FormEvent) {
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const tradeStats = useTradeStatisticsQuery();
+  const tradePlan = tradeStats.data?.tradePlan;
+  const tradesLeft = Math.max(
+    0,
+    (tradePlan?.penaltyFreeAt ?? 0) - (tradeStats.data?.completedTrades ?? 0),
+  );
+  function submit(e: FormEvent) {
     e.preventDefault();
     if (!(Number(amount) > 0) || !walletAddress.trim())
       return toast.error("Enter a positive amount and destination address.");
-    try {
-      await create({
-        amount,
-        walletAddress,
-        walletType: WithdrawalWalletType[walletType],
-      }).unwrap();
-      toast.success("Withdrawal request submitted.");
-      setAmount("");
-    } catch (error) {
-      toast.error(
-        normalizeError(error as Parameters<typeof normalizeError>[0])?.message,
-      );
-    }
+    setPasswordDialogOpen(true);
+  }
+  async function confirmWithdrawal(withdrawPassword: string) {
+    await create({
+      amount,
+      walletAddress,
+      walletType: WithdrawalWalletType[walletType],
+      withdrawPassword,
+    }).unwrap();
+    toast.success("Withdrawal request submitted successfully.");
+    setAmount("");
+    setWalletAddress("");
   }
   return (
     <>
@@ -491,21 +495,38 @@ function WithdrawPage() {
                 required
               />
             </div>
-            {/* {isPrincipal && (
-              <div className="md:col-span-3 flex items-start gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4">
-                <AlertTriangle className="size-5 shrink-0 text-amber-600" />
+
+            {isPrincipal && (
+              <div
+                className={`md:col-span-3 flex items-start gap-3 rounded-lg border p-4 ${
+                  tradePlan?.penaltyFree
+                    ? "border-profit/50 bg-profit/10"
+                    : "border-amber-500/50 bg-amber-500/10"
+                }`}
+              >
+                <AlertTriangle
+                  className={`size-5 shrink-0 ${
+                    tradePlan?.penaltyFree ? "text-profit" : "text-amber-600"
+                  }`}
+                />
                 <div className="space-y-1 text-sm">
-                  <p className="font-semibold text-amber-700">
-                    90-day lock on Principal wallet
+                  <p
+                    className={`font-semibold ${
+                      tradePlan?.penaltyFree ? "text-profit" : "text-amber-700"
+                    }`}
+                  >
+                    {tradePlan?.penaltyFree
+                      ? "No penalty on Principal withdrawals"
+                      : "Early-exit penalty on Principal withdrawals"}
                   </p>
                   <p className="text-muted-foreground">
-                    Withdrawing from Principal before 90 days (counted from your
-                    first deposit) incurs a <strong>30% penalty</strong> plus
-                    the standard 2% fee. After 90 days, only the 2% fee applies.
+                    {tradePlan?.penaltyFree
+                      ? "You have completed enough trades — only the standard 15% fee applies."
+                      : `You have completed ${tradeStats.data?.completedTrades ?? 0} of ${tradePlan?.penaltyFreeAt ?? 140} required trades. Withdrawing Principal now incurs a 40% penalty plus the standard 15% fee. ${tradesLeft} trades left to become penalty-free.`}
                   </p>
                 </div>
               </div>
-            )} */}
+            )}
             <div className="md:col-span-3">
               <Button type="submit" disabled={mutation.isLoading}>
                 {mutation.isLoading ? "Submitting…" : "Request withdrawal"}
@@ -515,6 +536,12 @@ function WithdrawPage() {
           <ErrorText error={mutation.error} />
         </CardContent>
       </Card>
+      <WithdrawPasswordDialog
+        open={passwordDialogOpen}
+        onOpenChange={setPasswordDialogOpen}
+        onConfirm={confirmWithdrawal}
+        loading={mutation.isLoading}
+      />
       <PageHeader title="Withdrawal history" />
       <DataTable
         columns={withdrawalColumns}
@@ -744,6 +771,9 @@ function TradingPage() {
         </CardContent>
       </Card>
       <SessionCodeCard />
+      <div className="mb-6">
+        <TradePlanProgress />
+      </div>
       <ProfitFlow />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
@@ -1181,30 +1211,26 @@ function PoolBonusPage() {
   const [cancel, cancelMutation] = useCancelPoolBonusRequestMutation();
   const [amount, setAmount] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
-  const [requestType, setRequestType] = useState<
-    keyof typeof PoolBonusRequestType
-  >("TRANSFER_TO_PRINCIPAL");
-  const isWithdraw = requestType === "WITHDRAW";
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
-  async function submit(e: FormEvent) {
+  function submit(e: FormEvent) {
     e.preventDefault();
     if (!(Number(amount) > 0)) return toast.error("Enter a positive amount.");
-    if (isWithdraw && !walletAddress.trim())
+    if (!walletAddress.trim())
       return toast.error("Destination address is required for withdrawal.");
-    try {
-      await create({
-        requestType: PoolBonusRequestType[requestType],
-        requestedAmount: Number(amount),
-        destinationAddress: isWithdraw ? walletAddress : undefined,
-      }).unwrap();
-      toast.success("Pool bonus request submitted. Pending admin approval.");
-      setAmount("");
-      setWalletAddress("");
-    } catch (error) {
-      toast.error(
-        normalizeError(error as Parameters<typeof normalizeError>[0])?.message,
-      );
-    }
+    setPasswordDialogOpen(true);
+  }
+
+  async function confirmRequest(withdrawPassword: string) {
+    await create({
+      requestType: PoolBonusRequestType.WITHDRAW,
+      requestedAmount: Number(amount),
+      destinationAddress: walletAddress,
+      withdrawPassword,
+    }).unwrap();
+    toast.success("Pool bonus request submitted. Pending admin approval.");
+    setAmount("");
+    setWalletAddress("");
   }
 
   async function handleCancel(id: PoolBonusRequest["id"]) {
@@ -1271,37 +1297,18 @@ function PoolBonusPage() {
     <>
       <PageHeader
         title="Pool Bonus"
-        description="Request to transfer or withdraw your pool bonus. Admin approval required."
+        description="Request to withdraw your pool bonus. Admin approval required."
       />
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>New pool bonus request</CardTitle>
           <CardDescription>
-            Submit a request to transfer pool bonus to your Principal wallet or
-            withdraw it. An admin will review and approve, reject, or update the
-            amount.
+            Submit a request to withdraw your pool bonus. An admin will review
+            and approve, reject, or update the amount.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="pool-request-type">Request type</Label>
-              <select
-                id="pool-request-type"
-                className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
-                value={requestType}
-                onChange={(e) =>
-                  setRequestType(
-                    e.target.value as keyof typeof PoolBonusRequestType,
-                  )
-                }
-              >
-                <option value="TRANSFER_TO_PRINCIPAL">
-                  Transfer to Principal
-                </option>
-                <option value="WITHDRAW">Withdraw</option>
-              </select>
-            </div>
+          <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="pool-request-amount">Amount</Label>
               <Input
@@ -1314,32 +1321,25 @@ function PoolBonusPage() {
                 required
               />
             </div>
-            {isWithdraw && (
-              <div className="space-y-2">
-                <Label htmlFor="pool-request-address">
-                  Destination address
-                </Label>
-                <Input
-                  id="pool-request-address"
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-            <div className="md:col-span-3 flex items-start gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4">
-              <AlertTriangle className="size-5 shrink-0 text-amber-600" />
-              <div className="space-y-1 text-sm">
-                <p className="font-semibold text-amber-700">
-                  Admin approval required
-                </p>
-                <p className="text-muted-foreground">
-                  Your request will be reviewed by an admin. The admin may
-                  approve, reject, or update the amount before processing.
-                </p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="pool-request-address">
+                Destination address
+              </Label>
+              <Input
+                id="pool-request-address"
+                value={walletAddress}
+                onChange={(e) => setWalletAddress(e.target.value)}
+                required
+              />
             </div>
-            <div className="md:col-span-3">
+            <div className="md:col-span-2 flex items-start gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4">
+              <AlertTriangle className="size-5 shrink-0 text-amber-600" />
+              <p className="text-muted-foreground text-sm">
+                Admin approval required — the admin may approve, reject, or
+                update the amount before processing.
+              </p>
+            </div>
+            <div className="md:col-span-2">
               <Button type="submit" disabled={createMutation.isLoading}>
                 {createMutation.isLoading ? "Submitting…" : "Submit request"}
               </Button>
@@ -1348,6 +1348,13 @@ function PoolBonusPage() {
           <ErrorText error={createMutation.error} />
         </CardContent>
       </Card>
+      <WithdrawPasswordDialog
+        open={passwordDialogOpen}
+        onOpenChange={setPasswordDialogOpen}
+        onConfirm={confirmRequest}
+        loading={createMutation.isLoading}
+        title="Confirm pool bonus withdrawal"
+      />
       <PageHeader title="Request history" />
       <DataTable
         columns={columns}

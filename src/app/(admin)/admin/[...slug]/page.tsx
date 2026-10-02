@@ -1266,7 +1266,7 @@ function PoolBonusRequestsPage() {
 
   return (
     <>
-      <PageHeader title="Pool Bonus Requests" description="Review and approve, reject, or update pool bonus transfer/withdrawal requests from users." />
+      <PageHeader title="Pool Bonus Requests" description="Review and approve, reject, or update pool bonus withdrawal requests from users." />
       <div className="mb-4 flex items-center gap-3">
         <Label htmlFor="pool-status-filter" className="text-sm">Filter:</Label>
         <select id="pool-status-filter" className="border-input bg-background h-9 rounded-md border px-3 text-sm" value={status} onChange={(e) => { setStatus(e.target.value as PoolBonusRequestStatus | ""); setPage(1); }}>
