@@ -69,6 +69,7 @@ export async function callUpstream(
 
   const finalHeaders: Record<string, string> = {
     accept: "application/json",
+     "ngrok-skip-browser-warning": "true",
     ...headers,
   };
 
