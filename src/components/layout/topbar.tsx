@@ -1,16 +1,20 @@
 "use client";
 
-import { Menu, Search } from "lucide-react";
+import { useMemo } from "react";
+import { usePathname } from "next/navigation";
+import { ChevronRight, Menu } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { useAppDispatch } from "@/store/hooks";
+import { mobileNavToggled } from "@/store/slices/ui-slice";
 import {
-  commandPaletteToggled,
-  mobileNavToggled,
-} from "@/store/slices/ui-slice";
+  isNavItemActive,
+  type NavItem,
+  type NavSection,
+} from "@/config/navigation";
 
 /**
  * Application top bar.
@@ -18,24 +22,27 @@ import {
  * Sticky with a translucent backdrop so table headers scroll under it rather
  * than colliding — a small thing that makes long ledger pages feel composed.
  *
+ * On the left sits a live "you are here" indicator, resolved from the same
+ * `NavSection[]` the sidebar and palette render. The page header repeats the
+ * breadcrumb, but it scrolls away; once a ledger table is halfway down the
+ * screen this is the only thing still telling you which page you are on.
+ *
  * The right side holds the persistent account controls — theme, then the avatar
  * that carries every account detail behind a click. The sidebar rail keeps only
  * sign out, so this is the one place identity lives.
- *
- * The search control is a button, not an input. It opens the ⌘K palette, which
- * searches navigation, and later transactions and users. A dead-looking input
- * that does nothing until you type is worse than an honest button, and this
- * also keeps the palette as the single search surface.
  */
 
 export interface TopbarProps {
   /** Right-hand slot for page-specific controls. */
   children?: React.ReactNode;
+  /** Navigation model — same array the sidebar renders. */
+  sections?: NavSection[];
   className?: string;
 }
 
 export function Topbar({
   children,
+  sections = [],
   className,
 }: TopbarProps) {
   const dispatch = useAppDispatch();
@@ -59,26 +66,7 @@ export function Topbar({
         <Menu className="size-5" />
       </Button>
 
-      <button
-        type="button"
-        onClick={() => dispatch(commandPaletteToggled())}
-        className={cn(
-          "text-muted-foreground hover:text-foreground hover:border-border",
-          "hidden h-8 w-full max-w-72 items-center gap-2 rounded-lg border border-dashed px-3 text-sm",
-          "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex",
-        )}
-      >
-        <Search className="size-4" />
-        <span>Search</span>
-        {/* Platform-specific glyph. Resolved during render rather than in an
-            effect, so the server's guess is simply overwritten on hydration. */}
-        <kbd
-          className="text-muted-foreground/70 ml-auto font-mono text-[0.6875rem]"
-          suppressHydrationWarning
-        >
-          {isAppleDevice() ? "⌘K" : "Ctrl K"}
-        </kbd>
-      </button>
+      <TopbarBreadcrumb sections={sections} />
 
       <div className="flex-1" />
 
@@ -91,7 +79,59 @@ export function Topbar({
   );
 }
 
-function isAppleDevice() {
-  if (typeof navigator === "undefined") return false;
-  return /mac|iphone|ipad|ipod/i.test(navigator.userAgent);
+/**
+ * Current-page indicator.
+ *
+ * Walks the nav tree and keeps the longest matching `href`, so a nested route
+ * like `/wallet/deposit` resolves to "Deposit" rather than its parent "Wallet",
+ * and a dynamic admin route like `/admin/users/:id` still resolves to "Users".
+ * Renders nothing on an unknown path, leaving the topbar's spacer to absorb it.
+ */
+function TopbarBreadcrumb({ sections }: { sections: NavSection[] }) {
+  const pathname = usePathname();
+
+  const current = useMemo(() => {
+    let match: { section: NavSection; item: NavItem } | null = null;
+
+    for (const section of sections) {
+      for (const item of section.items) {
+        if (!isNavItemActive(item, pathname)) continue;
+        if (!match || item.href.length > match.item.href.length) {
+          match = { section, item };
+        }
+      }
+    }
+
+    return match;
+  }, [sections, pathname]);
+
+  if (!current) return null;
+
+  const { section, item } = current;
+  const Icon = item.icon;
+
+  return (
+    <nav
+      aria-label="Current page"
+      className="hidden min-w-0 items-center gap-2 sm:flex"
+    >
+      <span className="bg-accent/60 text-accent-foreground grid size-7 shrink-0 place-items-center rounded-md">
+        <Icon className="size-4" aria-hidden="true" />
+      </span>
+      {section.label ? (
+        <>
+          <span className="text-muted-foreground truncate text-sm">
+            {section.label}
+          </span>
+          <ChevronRight
+            className="text-muted-foreground/50 size-3.5 shrink-0"
+            aria-hidden="true"
+          />
+        </>
+      ) : null}
+      <span className="text-foreground truncate text-sm font-medium">
+        {item.label}
+      </span>
+    </nav>
+  );
 }

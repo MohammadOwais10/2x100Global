@@ -77,7 +77,12 @@ export function Sidebar({
           className="group rounded-lg outline-none focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2"
           aria-label="2X100 Global — home"
         >
-          <BrandMark className="size-9 transition-transform duration-300 group-hover:scale-105" />
+          <BrandMark
+            className={cn(
+              "transition-[width,height] duration-300 group-hover:scale-105",
+              collapsed ? "size-20" : "size-40",
+            )}
+          />
         </Link>
       </div>
 

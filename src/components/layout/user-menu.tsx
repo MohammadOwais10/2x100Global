@@ -4,9 +4,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCallback } from "react";
 import {
-  Eye,
-  EyeOff,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Settings,
   ShieldCheck,
@@ -33,12 +32,8 @@ import {
 } from "@/components/ui/tooltip";
 import { RankBadge } from "@/components/common/status-badge";
 import { useLogoutMutation } from "@/features/auth/api/auth-api";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
 import { selectCurrentUser, selectIsAdmin } from "@/store/slices/auth-slice";
-import {
-  balancesVisibilityToggled,
-  selectBalancesHidden,
-} from "@/store/slices/ui-slice";
 import { ROUTES } from "@/config/routes";
 import { initialsOf } from "@/lib/utils/format";
 import { UserRole } from "@/types/enums";
@@ -183,8 +178,6 @@ function MenuRow({
 export function UserMenu({ className }: { className?: string }) {
   const user = useAppSelector(selectCurrentUser);
   const isAdmin = useAppSelector(selectIsAdmin);
-  const balancesHidden = useAppSelector(selectBalancesHidden);
-  const dispatch = useAppDispatch();
   const { signOut, isSigningOut } = useSignOut();
 
   if (!user) return null;
@@ -241,16 +234,7 @@ export function UserMenu({ className }: { className?: string }) {
 
         <MenuRow href={ROUTES.settings} icon={Settings} label="Settings" />
 
-        <MenuRow
-          icon={balancesHidden ? Eye : EyeOff}
-          label={balancesHidden ? "Show balances" : "Hide balances"}
-          onSelect={(event) => {
-            // Keep the menu open: toggling privacy is something users often do
-            // alongside another action, and closing feels abrupt.
-            event.preventDefault();
-            dispatch(balancesVisibilityToggled());
-          }}
-        />
+        <MenuRow href={ROUTES.support} icon={LifeBuoy} label="Support" />
 
         {isAdmin && (
           <>

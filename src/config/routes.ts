@@ -44,7 +44,7 @@ export const ROUTES = {
   notifications: "/notifications",
   profile: "/profile",
   settings: "/settings",
-  support: "/support",
+  support: "/tickets",
   tickets: "/tickets",
   myPosts: "/my-posts",
   myNews: "/my-news",

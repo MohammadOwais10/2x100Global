@@ -117,7 +117,7 @@ export function AppShell({
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar>{topbarActions}</Topbar>
+        <Topbar sections={effectiveSections}>{topbarActions}</Topbar>
 
         {/* `min-w-0` is load-bearing: without it a wide table inside a flex
             child refuses to shrink and blows out the whole layout. */}
