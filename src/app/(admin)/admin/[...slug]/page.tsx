@@ -72,7 +72,7 @@ import {
   useAdminDepositsQuery,
   useAdminNotificationsQuery,
   useAdminRanksQuery,
-  useAdminReferralsQuery,
+  useAdminSponsorsQuery,
   useAdminSettingsQuery,
   useAdminTradeScheduleQuery,
   useAdminTradesQuery,
@@ -135,7 +135,7 @@ import type {
   Ticket,
   TicketMessage,
   Rank,
-  Referral,
+  Sponsor,
   Setting,
   Trade,
   TradeExclusion,
@@ -576,7 +576,7 @@ function UserTeamDialog({ userId, name }: { userId: UUID; name: string }) {
                       <Money value={String(m.investedAmount)} showCurrency size="sm" />
                     </td>
                     <td className="py-2 text-right">
-                      {formatCount(m.directReferralCount)}
+                      {formatCount(m.directSponsorCount)}
                     </td>
                   </tr>
                 ))}
@@ -589,11 +589,11 @@ function UserTeamDialog({ userId, name }: { userId: UUID; name: string }) {
   );
 }
 
-const referralsColumns: Array<DataTableColumn<Referral>> = [
+const sponsorsColumns: Array<DataTableColumn<Sponsor>> = [
   { id: "user", header: "User", cell: (row) => person(row.user, row.userId) },
   { id: "sponsor", header: "Sponsor", cell: (row) => person(row.sponsor, row.sponsorId || undefined) },
   { id: "level", header: "Level", cell: (row) => formatCount(row.level) },
-  { id: "direct", header: "Direct", cell: (row) => formatCount(row.directReferralCount), align: "right" },
+  { id: "direct", header: "Direct", cell: (row) => formatCount(row.directSponsorCount), align: "right" },
   { id: "team", header: "Team size", cell: (row) => formatCount(row.teamSize), align: "right" },
   { id: "directDeposits", header: "Direct deposits", cell: (row) => <Money value={row.directDepositAmount} showCurrency size="sm" />, nowrap: true },
   { id: "teamDeposits", header: "Team deposits", cell: (row) => <Money value={row.teamDepositAmount} showCurrency size="sm" />, nowrap: true },
@@ -604,7 +604,7 @@ const referralsColumns: Array<DataTableColumn<Referral>> = [
 const ranksColumns: Array<DataTableColumn<Rank>> = [
   { id: "user", header: "User", cell: (row) => person(row.user, row.userId) },
   { id: "rank", header: "Rank", cell: (row) => <StatusBadge status={row.level} showIcon={false} /> },
-  { id: "direct", header: "Direct referrals", cell: (row) => formatCount(row.directReferrals), align: "right" },
+  { id: "direct", header: "Direct sponsors", cell: (row) => formatCount(row.directSponsors), align: "right" },
   { id: "team", header: "Team size", cell: (row) => formatCount(row.teamSize), align: "right" },
   { id: "bonus", header: "Rank bonus", cell: (row) => <Money value={row.totalRankBonusEarned} showCurrency size="sm" />, nowrap: true },
   { id: "achieved", header: "Achieved", cell: (row) => formatDateTime(row.achievedAt), nowrap: true },
@@ -1814,7 +1814,7 @@ function AdminUserDetailPage({ userId }: { userId: UUID }) {
               <DetailRow label="Country" value={user.country || "—"} />
               <DetailRow label="Role" value={humanizeEnum(user.role)} />
               <DetailRow label="Rank" value={humanizeEnum(user.rank)} />
-              <DetailRow label="Referral code" value={user.referralCode} />
+              <DetailRow label="Sponsor code" value={user.sponsorCode} />
               <DetailRow label="Wallet address" value={user.walletAddress || "—"} />
               <div className="flex items-center justify-between border-t pt-3">
                 <span className="text-muted-foreground text-sm">Status</span>
@@ -2002,8 +2002,8 @@ export default function AdminModulePage() {
       return <AdminListPage title="Trading" description="Control trading, manage excluded users, and review platform trades." icon={ChartLine} columns={tradesColumns} useListQuery={useAdminTradesQuery} getRowId={(row) => row.id} statusOptions={["PENDING", "ACTIVE", "COMPLETED", "FAILED", "CANCELLED"]} controls={<TradingControls />} />;
     case ROUTES.admin.wallets:
       return <AdminListPage title="Wallets" description="Inspect member wallet balances and aggregate movement." icon={WalletCards} columns={walletsColumns} useListQuery={useAdminWalletsQuery} getRowId={(row) => row.id} />;
-    case ROUTES.admin.referralReports:
-      return <AdminListPage title="Referrals" description="Review sponsorship, team growth, deposits, and rewards." icon={Network} columns={referralsColumns} useListQuery={useAdminReferralsQuery} getRowId={(row) => row.id} />;
+    case ROUTES.admin.sponsorReports:
+      return <AdminListPage title="Sponsors" description="Review sponsorship, team growth, deposits, and rewards." icon={Network} columns={sponsorsColumns} useListQuery={useAdminSponsorsQuery} getRowId={(row) => row.id} />;
     case ROUTES.admin.rankReports:
       return <AdminListPage title="Ranks" description="Review achieved ranks, team qualification, and bonuses." icon={Trophy} columns={ranksColumns} useListQuery={useAdminRanksQuery} getRowId={(row) => row.id} />;
     case ROUTES.admin.cycleBonusReports:

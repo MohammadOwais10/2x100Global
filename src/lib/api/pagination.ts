@@ -7,7 +7,7 @@ import type { ApiMeta, Paginated } from "@/types/api";
  *
  *   A) sibling `meta`  — via `sendPaginated()`
  *      { success, data: [...], meta: { page, limit, total, totalPages } }
- *      used by: ledgers, deposits, withdrawals, trades, referral bonuses,
+ *      used by: ledgers, deposits, withdrawals, trades, sponsor bonuses,
  *               cycle bonuses
  *
  *   B) inline in `data` — hand-rolled in the service
@@ -74,6 +74,8 @@ export function fromInlineEnvelope<T>(
 /**
  * Adapter for endpoints that return a bare array with no pagination at all
  * (GET /referrals/referrals, GET /settings). Presents them through the same
+ * @note the `/referrals/*` path is the backend's own; only the field names and
+ *       UI language are renamed to "sponsor" on this side.
  * interface so a table component can consume either without branching.
  */
 export function fromBareArray<T>(response: unknown): Paginated<T> {

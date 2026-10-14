@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Referral landing: /ref/<CODE> -> /signup?ref=<CODE>
+ * Sponsor landing: /ref/<CODE> -> /signup?ref=<CODE>
  *
  * Implemented as a Route Handler rather than a page, because there is nothing
  * to render — it is purely a redirect. A page would ship a React tree, run a
@@ -19,7 +19,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * prospective user and should still land on the form.
  */
 
-const REFERRAL_CODE_PATTERN = /^[A-Z0-9]{8}$/;
+const SPONSOR_CODE_PATTERN = /^[A-Z0-9]{8}$/;
 
 export async function GET(
   request: NextRequest,
@@ -34,7 +34,7 @@ export async function GET(
   const appUrl = process.env.APP_URL || request.nextUrl.origin;
   const target = new URL("/signup", appUrl);
 
-  if (REFERRAL_CODE_PATTERN.test(normalised)) {
+  if (SPONSOR_CODE_PATTERN.test(normalised)) {
     target.searchParams.set("ref", normalised);
   }
 

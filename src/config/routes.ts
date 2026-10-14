@@ -18,8 +18,12 @@ export const ROUTES = {
   signup: "/signup",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
-  /** Referral landing: /ref/<8-char code>, redirects into signup. */
-  referralLanding: (code: string) => `/ref/${code}`,
+  /**
+   * Sponsor landing: /ref/<8-char code>, redirects into signup.
+   * The `/ref/` path is fixed by the backend, which builds invite links as
+   * `${FRONTEND_URL}/ref/{code}` — do not rename it to `/sponsor/`.
+   */
+  sponsorLanding: (code: string) => `/ref/${code}`,
 
   // -- authenticated user ---------------------------------------------------
   dashboard: "/dashboard",
@@ -29,9 +33,9 @@ export const ROUTES = {
   transactions: "/transactions",
   trading: "/trading",
   tradingHistory: "/trading/history",
-  referral: "/referral",
-  referralTree: "/referral/tree",
-  referralEarnings: "/referral/earnings",
+  sponsor: "/sponsor",
+  sponsorTree: "/sponsor/tree",
+  sponsorEarnings: "/sponsor/earnings",
   ranks: "/ranks",
   cycleBonus: "/rewards/cycle-bonus",
   poolBonus: "/rewards/pool-bonus",
@@ -55,7 +59,7 @@ export const ROUTES = {
     withdrawals: "/admin/withdrawals",
     trading: "/admin/trading",
     wallets: "/admin/wallets",
-    referralReports: "/admin/reports/referrals",
+    sponsorReports: "/admin/reports/sponsors",
     rankReports: "/admin/reports/ranks",
     cycleBonusReports: "/admin/reports/cycle-bonus",
     poolBonusRequests: "/admin/pool-bonus-requests",
@@ -80,7 +84,7 @@ export const PROTECTED_PREFIXES = [
   "/wallet",
   "/transactions",
   "/trading",
-  "/referral",
+  "/sponsor",
   "/ranks",
   "/rewards",
   "/calculator",

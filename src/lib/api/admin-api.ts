@@ -16,8 +16,8 @@ import type {
   CycleBonus,
   Deposit,
   Rank,
-  Referral,
   Setting,
+  Sponsor,
   Trade,
   TradeExclusion,
   TradeSchedule,
@@ -74,7 +74,7 @@ export interface AdminTeamMember {
   userId: UUID;
   level: number;
   investedAmount: number;
-  directReferralCount: number;
+  directSponsorCount: number;
   teamSize: number;
   joinedAt: string | null;
   user: { id: UUID; name: string | null; email: string } | null;
@@ -122,7 +122,7 @@ export const adminApi = baseApi.injectEndpoints({
     }),
     /**
      * Team members under a user (all levels) with each member's approved
-     * deposit total — the per-member investment breakdown on Referrals.
+     * deposit total — the per-member investment breakdown on Sponsors.
      */
     adminUserTeam: builder.query<{ members: AdminTeamMember[] }, UUID>({
       query: (userId) => bff(`/admin/users/${userId}/team`),
@@ -153,11 +153,11 @@ export const adminApi = baseApi.injectEndpoints({
         fromInlineEnvelope<Wallet>(response, "items"),
       providesTags: (result) => listTags("Wallet", result?.items),
     }),
-    adminReferrals: builder.query<Paginated<Referral>, AdminListParams>({
+    adminSponsors: builder.query<Paginated<Sponsor>, AdminListParams>({
       query: (params) => listQuery("/admin/referrals", params),
       transformResponse: (response: unknown) =>
-        fromInlineEnvelope<Referral>(response, "items"),
-      providesTags: (result) => listTags("Referral", result?.items),
+        fromInlineEnvelope<Sponsor>(response, "items"),
+      providesTags: (result) => listTags("Sponsor", result?.items),
     }),
     adminRanks: builder.query<Paginated<Rank>, AdminListParams>({
       query: (params) => listQuery("/admin/ranks", params),
@@ -319,7 +319,7 @@ export const {
   useAdminWithdrawalsQuery,
   useAdminTradesQuery,
   useAdminWalletsQuery,
-  useAdminReferralsQuery,
+  useAdminSponsorsQuery,
   useAdminRanksQuery,
   useAdminCycleBonusesQuery,
   useAdminBlockchainQuery,

@@ -3,7 +3,7 @@
  *
  * Centralised because invalidation in this domain is heavily cross-cutting:
  * approving a single deposit moves money, so it must invalidate the deposit
- * list, the wallet balances, the ledger, the referral bonuses it triggered,
+ * list, the wallet balances, the ledger, the sponsor bonuses it triggered,
  * the sponsor's rank progress, and the admin dashboard totals. Scattering
  * those strings across feature files guarantees someone eventually forgets
  * one and ships a stale balance.
@@ -28,10 +28,10 @@ export const API_TAGS = [
   "Trade",
   "TradeStats",
   "TradeExclusion",
-  "Referral",
-  "ReferralBonus",
-  "ReferralTree",
-  "ReferralStats",
+  "Sponsor",
+  "SponsorBonus",
+  "SponsorTree",
+  "SponsorStats",
   "Rank",
   "CycleBonus",
   "PoolBonusRequest",

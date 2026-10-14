@@ -59,7 +59,7 @@ export function SponsorTradeBonus({
           Sponsor Trade Bonus Active
         </CardTitle>
         <CardDescription>
-          One of your referrals made a qualifying deposit. You earn boosted
+          One of your sponsors made a qualifying deposit. You earn boosted
           profit on every trade for the next {bonus.days} days.
         </CardDescription>
       </CardHeader>

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 /**
  * Count-up animation for integer statistics.
  *
- * SCOPE — this is for COUNTS ONLY (users, trades, referrals). It must never be
+ * SCOPE — this is for COUNTS ONLY (users, trades, sponsors). It must never be
  * used for monetary values: it animates through intermediate numbers, and a
  * balance that visibly ticks through wrong figures on its way to the right one
  * is unacceptable on a financial screen. Use `<Money>` for money.

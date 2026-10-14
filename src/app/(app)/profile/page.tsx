@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { ErrorState } from "@/components/common/error-state";
 import { PageHeader } from "@/components/common/page-header";
-import { ShareReferralButton } from "@/components/common/share-referral-button";
+import { ShareSponsorButton } from "@/components/common/share-sponsor-button";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,19 +116,19 @@ export default function ProfilePage() {
 
   const normalizedError = normalizeError(error);
 
-  const referralLink =
+  const sponsorLink =
     typeof window !== "undefined"
-      ? `${window.location.origin}${ROUTES.referralLanding(profile?.referralCode ?? "")}`
+      ? `${window.location.origin}${ROUTES.sponsorLanding(profile?.sponsorCode ?? "")}`
       : "";
 
   const [copiedRef, setCopiedRef] = useState(false);
 
-  const copyReferral = async () => {
-    if (!referralLink) return;
+  const copySponsor = async () => {
+    if (!sponsorLink) return;
     try {
-      await navigator.clipboard.writeText(referralLink);
+      await navigator.clipboard.writeText(sponsorLink);
       setCopiedRef(true);
-      toast.success("Referral link copied!");
+      toast.success("Sponsor link copied!");
       setTimeout(() => setCopiedRef(false), 1500);
     } catch {
       toast.error("Could not copy to clipboard.");
@@ -230,7 +230,7 @@ export default function ProfilePage() {
               ) : (
                 <>
                   <AccountRow icon={Mail} label="Email" value={profile.email} />
-                  <AccountRow icon={UserRound} label="Referral code" value={profile.referralCode} />
+                  <AccountRow icon={UserRound} label="Sponsor code" value={profile.sponsorCode} />
                   <AccountRow icon={ShieldCheck} label="Role" value={humanizeEnum(profile.role)} />
                   <AccountRow icon={ShieldCheck} label="Rank" value={humanizeEnum(profile.rank)} />
                   <AccountRow icon={CalendarDays} label="Joined" value={formatDateTime(profile.createdAt)} />
@@ -247,7 +247,7 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserRound className="size-5 text-(--logo-gold-300)" />
-                Your Referral Link
+                Your Sponsor Link
               </CardTitle>
               <CardDescription>
                 Share this link to invite new members. They land on signup with your code pre-filled.
@@ -255,14 +255,14 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <Input
-                value={referralLink}
+                value={sponsorLink}
                 readOnly
-                aria-label="Referral link"
+                aria-label="Sponsor link"
                 className="font-mono text-sm"
               />
               <div className="flex gap-2">
                 <Button
-                  onClick={copyReferral}
+                  onClick={copySponsor}
                   variant={copiedRef ? "secondary" : "default"}
                   className="flex-1"
                 >
@@ -278,7 +278,7 @@ export default function ProfilePage() {
                     </>
                   )}
                 </Button>
-                <ShareReferralButton referralLink={referralLink} />
+                <ShareSponsorButton sponsorLink={sponsorLink} />
               </div>
             </CardContent>
           </Card>

@@ -178,7 +178,7 @@ export const advantages = {
     {
       title: "Multiple Income Opportunities",
       detail:
-        "Members can benefit from trading activities as well as additional referral and team-development incentives available within the platform structure.",
+        "Members can benefit from trading activities as well as additional sponsor and team-development incentives available within the platform structure.",
     },
   ],
 };
@@ -251,7 +251,7 @@ export const incomeStreams = {
     "2X100 Global provides seven major income sources alongside additional member benefits.",
   sources: [
     { name: "Welcome Bonus", detail: "Instant 5% bonus on every qualifying deposit." },
-    { name: "Sponsor Bonus", detail: "Direct referral commission on member deposits." },
+    { name: "Sponsor Bonus", detail: "Direct sponsor commission on member deposits." },
     {
       name: "AI Auto Trade Income",
       detail: "Consistent returns from AI automated trading.",
@@ -262,7 +262,7 @@ export const incomeStreams = {
     },
     {
       name: "Advanced Trade Income",
-      detail: "Additional AI trade rewards on qualifying referrals.",
+      detail: "Additional AI trade rewards on qualifying sponsors.",
     },
     {
       name: "AI Trading System Commissions",

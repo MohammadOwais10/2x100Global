@@ -34,7 +34,7 @@ import { ROUTES } from "@/config/routes";
 /**
  * Signup — single-step form.
  *
- * Fields: name, email, password, optional phone/referral code + terms.
+ * Fields: name, email, password, optional phone/sponsor code + terms.
  * The backend auto-verifies the email, so on success we send the user
  * straight to login.
  */
@@ -43,17 +43,19 @@ export function SignupForm() {
   const searchParams = useSearchParams();
   const [signup] = useSignupMutation();
 
-  // `/ref/<code>` rewrites to `/signup?ref=<code>`; also accept ?referralCode=
-  // so a manually shared link with either param works.
-  const referralFromUrl = (
+  // `/ref/<code>` rewrites to `/signup?ref=<code>`; also accept ?sponsorCode=
+  // (and the legacy ?referralCode=) so a manually shared link with any param
+  // works.
+  const sponsorFromUrl = (
     searchParams.get("ref") ??
+    searchParams.get("sponsorCode") ??
     searchParams.get("referralCode") ??
     ""
   )
     .trim()
     .toUpperCase();
 
-  const hasReferral = referralFromUrl.length > 0;
+  const hasSponsor = sponsorFromUrl.length > 0;
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -65,7 +67,7 @@ export function SignupForm() {
       confirmPassword: "",
       phone: "",
       country: "",
-      referralCode: referralFromUrl,
+      sponsorCode: sponsorFromUrl,
     },
   });
 
@@ -81,6 +83,7 @@ export function SignupForm() {
       });
       router.replace(ROUTES.login);
     },
+    fieldAliases: { referralCode: "sponsorCode" },
   });
 
   return (
@@ -92,8 +95,8 @@ export function SignupForm() {
         description="Open a member account, deposit USDT, and let the automated sessions run."
       />
 
-      {hasReferral ? (
-        <ReferralBanner code={referralFromUrl} />
+      {hasSponsor ? (
+        <SponsorBanner code={sponsorFromUrl} />
       ) : null}
 
       <AuthFormError error={formError} />
@@ -252,10 +255,10 @@ export function SignupForm() {
 
           <FormField
             control={form.control}
-            name="referralCode"
+            name="sponsorCode"
             render={({ field, fieldState }) => (
               <FormItem className="space-y-2">
-                <AuthFieldLabel>Referral code</AuthFieldLabel>
+                <AuthFieldLabel>Sponsor code</AuthFieldLabel>
 
                 <AuthInputShell icon={Ticket}>
                   <AuthInput
@@ -296,10 +299,10 @@ export function SignupForm() {
 }
 
 /**
- * Confirms a referral landed, so a member arriving from `/ref/<code>` can see
- * the code was actually captured before they type anything.
+ * Confirms a sponsor code landed, so a member arriving from `/ref/<code>` can
+ * see the code was actually captured before they type anything.
  */
-function ReferralBanner({ code }: { code: string }) {
+function SponsorBanner({ code }: { code: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}

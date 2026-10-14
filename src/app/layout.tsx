@@ -69,7 +69,7 @@ export default async function RootLayout({
             email: session.email,
             role: session.role,
             name: null,
-            referralCode: "",
+            sponsorCode: "",
             rank: "LV1",
             autoTradeStatus: false,
             status: "ACTIVE",

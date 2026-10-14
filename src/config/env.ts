@@ -32,7 +32,7 @@ const schema = z.object({
 
   /**
    * Public origin of THIS app. Used for absolute redirect URLs and for the
-   * referral link fallback. Must match the backend's FRONTEND_URL so that
+   * sponsor link fallback. Must match the backend's FRONTEND_URL so that
    * `/referrals/link` produces URLs that actually resolve.
    */
   APP_URL: z

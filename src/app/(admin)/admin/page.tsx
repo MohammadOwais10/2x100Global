@@ -102,8 +102,8 @@ export default function AdminOverviewPage() {
             index={7}
           />
           <StatCard
-            label="Referral bonuses"
-            value={<AnimatedNumber value={data?.totalReferralBonuses} />}
+            label="Sponsor bonuses"
+            value={<AnimatedNumber value={data?.totalSponsorBonuses} />}
             icon={Network}
             accent="profit"
             loading={isLoading}

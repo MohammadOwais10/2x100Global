@@ -36,7 +36,7 @@ import type { WalletSummary } from "@/types/models";
 const WALLET_LABELS: Record<WalletType, string> = {
   [WalletType.PRINCIPAL]: "Principal",
   [WalletType.TRADING_PROFIT]: "Trading profit",
-  [WalletType.REFERRAL]: "Referral",
+  [WalletType.REFERRAL]: "Sponsor",
   [WalletType.DEPOSIT_BONUS]: "Deposit bonus",
   [WalletType.RANK_BONUS]: "Rank bonus",
   [WalletType.POOL_BONUS]: "Pool bonus",

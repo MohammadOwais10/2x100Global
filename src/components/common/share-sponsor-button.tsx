@@ -11,22 +11,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface ShareReferralButtonProps {
-  referralLink: string;
+interface ShareSponsorButtonProps {
+  sponsorLink: string;
   disabled?: boolean;
 }
 
-export function ShareReferralButton({
-  referralLink,
+export function ShareSponsorButton({
+  sponsorLink,
   disabled = false,
-}: ShareReferralButtonProps) {
+}: ShareSponsorButtonProps) {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const shareToSocial = (platform: string) => {
-    if (!referralLink) return;
+    if (!sponsorLink) return;
 
     const shareText = "Join me on this amazing platform and earn rewards!";
-    const shareUrl = referralLink;
+    const shareUrl = sponsorLink;
 
     let url = "";
 
@@ -57,14 +57,14 @@ export function ShareReferralButton({
   return (
     <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" disabled={disabled || !referralLink}>
+        <Button variant="outline" disabled={disabled || !sponsorLink}>
           <Share2 className="mr-2 size-4" />
           Share
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share Referral Link</DialogTitle>
+          <DialogTitle>Share Sponsor Link</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           <Button

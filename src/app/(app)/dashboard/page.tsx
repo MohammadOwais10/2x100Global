@@ -20,7 +20,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
 import { Money } from "@/components/common/money";
 import { PageHeader, SectionHeader } from "@/components/common/page-header";
-import { ShareReferralButton } from "@/components/common/share-referral-button";
+import { ShareSponsorButton } from "@/components/common/share-sponsor-button";
 import { RankBadge, StatusBadge } from "@/components/common/status-badge";
 import { TradePlanProgress } from "@/components/common/trade-plan-progress";
 import {
@@ -78,7 +78,7 @@ import { selectCurrentUser } from "@/store/slices/auth-slice";
  *                    matter (it gates the Principal withdrawal penalty).
  *   4. Recent      — the latest sessions with their status, so the screen
  *                    answers "what just happened" without a navigation hop.
- *   5. Rail        — referral link, deposit address, account facts.
+ *   5. Rail        — sponsor link, deposit address, account facts.
  *
  * Structure over spectacle: every tile is a hairline-separated cell of a single
  * grid rather than a floating rounded card, money is tabular, and each figure
@@ -122,10 +122,10 @@ export default function DashboardPage() {
   const status = profile?.status ?? user?.status ?? null;
   const verified = status === "ACTIVE";
 
-  const referralCode = profile?.referralCode ?? user?.referralCode ?? "";
-  const referralLink =
-    typeof window !== "undefined" && referralCode
-      ? `${window.location.origin}${ROUTES.referralLanding(referralCode)}`
+  const sponsorCode = profile?.sponsorCode ?? user?.sponsorCode ?? "";
+  const sponsorLink =
+    typeof window !== "undefined" && sponsorCode
+      ? `${window.location.origin}${ROUTES.sponsorLanding(sponsorCode)}`
       : "";
 
   const depositAddress = depositWallet.data?.address ?? null;
@@ -364,7 +364,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Network className="text-primary size-4" />
-              Referral
+              Sponsor
             </CardTitle>
             <CardDescription>
               Anyone who signs up with your code joins your team.
@@ -372,23 +372,23 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <CopyField
-              label="Referral link"
-              value={referralLink}
+              label="Sponsor link"
+              value={sponsorLink}
               fallback={dashboard.isLoading ? "Building link…" : "Unavailable"}
             />
             <div className="flex items-center justify-between gap-3">
               <p className="text-muted-foreground text-xs">
                 Code{" "}
                 <span className="text-foreground font-mono">
-                  {referralCode || "—"}
+                  {sponsorCode || "—"}
                 </span>
               </p>
-              <ShareReferralButton referralLink={referralLink} />
+              <ShareSponsorButton sponsorLink={sponsorLink} />
             </div>
             <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border/60 bg-border/40">
               <Tile
                 label="Direct"
-                value={(dashboard.data?.directReferrals ?? 0).toLocaleString()}
+                value={(dashboard.data?.directSponsors ?? 0).toLocaleString()}
                 skeletonWidth="w-10"
                 loading={dashboard.isLoading}
               />
@@ -441,9 +441,9 @@ export default function DashboardPage() {
               <Fact label="Rank">
                 <RankBadge rank={profile?.rank} />
               </Fact>
-              <Fact label="Referral code">
+              <Fact label="Sponsor code">
                 <span className="font-mono text-xs">
-                  {referralCode || "—"}
+                  {sponsorCode || "—"}
                 </span>
               </Fact>
               <Fact label="Payout address">

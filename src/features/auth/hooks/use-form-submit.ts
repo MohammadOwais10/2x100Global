@@ -15,8 +15,8 @@ import type { NormalizedApiError } from "@/types/api";
  *
  *  1. Normalising the RTK error into our discriminated `NormalizedApiError`.
  *  2. Mapping the backend's `errors: [{ field, message }]` onto the matching
- *     RHF fields, so a server-side "Invalid referral code" appears under the
- *     referral input rather than in a toast the user has to mentally re-attach
+ *     RHF fields, so a server-side "Invalid sponsor code" appears under the
+ *     sponsor input rather than in a toast the user has to mentally re-attach
  *     to a field.
  *  3. Keeping any field error the server reports for a field the form does not
  *     have (contract drift) as a form-level message, instead of silently
@@ -39,6 +39,14 @@ export interface UseFormSubmitOptions<TValues extends FieldValues, TResult> {
   toastOnError?: boolean;
   /** Suppress the inline form-level error (when the page renders its own). */
   silent?: boolean;
+  /**
+   * Map a server-reported field name onto a form field when the two differ.
+   *
+   * The backend still reports signup's invite field as `referralCode`; the form
+   * calls it `sponsorCode`. Without this, a server error for that field would
+   * miss its input and be shown as a form-level message instead.
+   */
+  fieldAliases?: Record<string, string>;
 }
 
 export function useFormSubmit<TValues extends FieldValues, TResult>({
@@ -47,6 +55,7 @@ export function useFormSubmit<TValues extends FieldValues, TResult>({
   onSuccess,
   toastOnError = true,
   silent = false,
+  fieldAliases,
 }: UseFormSubmitOptions<TValues, TResult>) {
   const [formError, setFormError] = useState<NormalizedApiError | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -76,9 +85,11 @@ export function useFormSubmit<TValues extends FieldValues, TResult>({
           const known = new Set(Object.keys(form.getValues()));
           const unmapped: string[] = [];
 
-          for (const [field, message] of Object.entries(fieldErrors)) {
+          for (const [serverField, message] of Object.entries(fieldErrors)) {
             // Server paths are dot-joined, which is already RHF path syntax.
-            // Compare on the root segment so "profile.name" matches "profile".
+            // Translate any known server/form naming difference, then compare
+            // on the root segment so "profile.name" matches "profile".
+            const field = applyAlias(serverField, fieldAliases);
             const root = field.split(".")[0];
 
             if (known.has(field) || known.has(root)) {
@@ -106,7 +117,10 @@ export function useFormSubmit<TValues extends FieldValues, TResult>({
           // applies to client-side resolver errors, not to `setError`.
           const first = Object.keys(fieldErrors ?? {})[0];
           if (first) {
-            form.setFocus(first as Path<TValues>, { shouldSelect: true });
+            form.setFocus(
+              applyAlias(first, fieldAliases) as Path<TValues>,
+              { shouldSelect: true },
+            );
           }
         } else {
           if (!silent) setFormError(error);
@@ -120,7 +134,7 @@ export function useFormSubmit<TValues extends FieldValues, TResult>({
         setSubmitting(false);
       }
     },
-    [form, mutate, onSuccess, silent, toastOnError],
+    [form, mutate, onSuccess, silent, toastOnError, fieldAliases],
   );
 
   return {
@@ -129,6 +143,21 @@ export function useFormSubmit<TValues extends FieldValues, TResult>({
     formError,
     clearFormError: () => setFormError(null),
   };
+}
+
+/**
+ * Rename a server field path's root segment using an alias map, preserving any
+ * dotted tail (e.g. alias `referralCode -> sponsorCode` turns
+ * `referralCode.value` into `sponsorCode.value`).
+ */
+function applyAlias(
+  field: string,
+  aliases: Record<string, string> | undefined,
+): string {
+  if (!aliases) return field;
+  const root = field.split(".")[0];
+  const alias = aliases[root];
+  return alias ? `${alias}${field.slice(root.length)}` : field;
 }
 
 /**

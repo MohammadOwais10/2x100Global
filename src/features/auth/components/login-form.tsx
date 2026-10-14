@@ -76,7 +76,7 @@ export function LoginForm() {
         eyebrow="Member access"
         title="Welcome"
         accent="back."
-        description="Sign in to reach your portfolio, trading sessions and referral network."
+        description="Sign in to reach your portfolio, trading sessions and sponsor network."
       />
 
       <AuthFormError error={formError} />
