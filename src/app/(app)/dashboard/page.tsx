@@ -215,19 +215,26 @@ export default function DashboardPage() {
               <CardTitle>Trading performance</CardTitle>
               <CardDescription>Lifetime, across every session.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-px overflow-hidden rounded-lg border border-border/60 bg-border/40 sm:grid-cols-2">
-                <Tile
-                  label="Net profit"
-                  loading={stats.isLoading}
-                  value={
+            <CardContent className="space-y-5">
+              <div className="grid gap-px overflow-hidden rounded-lg border border-border/60 bg-border/40 sm:grid-cols-3">
+                {/* Hero: the headline number the rest of the panel explains. */}
+                <div className="bg-card flex flex-col gap-1.5 p-4 sm:col-span-3">
+                  <span className="text-muted-foreground text-xs font-medium">
+                    Net profit
+                  </span>
+                  {stats.isLoading ? (
+                    <Skeleton className="h-9 w-40" />
+                  ) : (
                     <Money
                       value={decimal(stats.data?.totalUserProfit)}
                       showCurrency
                       variant="signed"
+                      size="xl"
+                      className="text-2xl leading-none sm:text-3xl"
                     />
-                  }
-                />
+                  )}
+                </div>
+
                 <Tile
                   label="Volume"
                   loading={stats.isLoading}
@@ -235,6 +242,7 @@ export default function DashboardPage() {
                     <Money
                       value={decimal(stats.data?.totalVolume)}
                       showCurrency
+                      compact
                     />
                   }
                 />
@@ -255,14 +263,19 @@ export default function DashboardPage() {
                     <Money
                       value={decimal(stats.data?.totalAdminCommission)}
                       showCurrency
+                      compact
                     />
                   }
                 />
               </div>
+
+              {/* The plan gates the Principal penalty — read as a footer of the
+                  same panel, not a competing strip beside it. */}
+              <div className="border-border/60 border-t pt-5">
+                <TradePlanProgress variant="inline" />
+              </div>
             </CardContent>
           </Card>
-
-          <TradePlanProgress variant="inline" />
         </div>
 
         <Card className="xl:col-span-7">

@@ -94,7 +94,7 @@ import {
   type AdminListParams,
 } from "@/lib/api/admin-api";
 import { normalizeError } from "@/lib/api/errors";
-import { formatCount, formatDateTime, humanizeEnum, truncateHex } from "@/lib/utils/format";
+import { formatCount, formatDateTime, humanizeEnum, truncateHex, walletLabel } from "@/lib/utils/format";
 import { CopyButton } from "@/components/common/copy-button";
 import { AdminWithdrawalActions } from "@/features/withdrawals/components/admin-withdrawal-actions";
 import { useApproveDepositMutation } from "@/features/deposits/api/deposits-api";
@@ -402,7 +402,7 @@ function UserRewardAction({ user }: { user: User }) {
             >
               {REWARD_WALLET_TYPES.map((t) => (
                 <option key={t} value={t}>
-                  {humanizeEnum(WalletType[t])}
+                  {walletLabel(WalletType[t])}
                 </option>
               ))}
             </select>
@@ -486,7 +486,7 @@ const withdrawalsColumns: Array<DataTableColumn<Withdrawal>> = [
   { id: "address", header: "Address", cell: (row) => <span className="font-mono text-xs">{truncateHex(row.destinationAddress)}</span>, nowrap: true },
   { id: "amount", header: "Net amount", cell: (row) => <Money value={row.netAmount} showCurrency size="sm" />, nowrap: true },
   { id: "status", header: "Status", cell: (row) => <StatusBadge status={row.status} /> },
-  { id: "wallet", header: "Wallet", cell: (row) => humanizeEnum(row.walletType) },
+  { id: "wallet", header: "Wallet", cell: (row) => walletLabel(row.walletType) },
   { id: "network", header: "Network", cell: (row) => row.network },
   { id: "created", header: "Created", cell: (row) => formatDateTime(row.createdAt), nowrap: true },
   {
@@ -515,7 +515,7 @@ const tradesColumns: Array<DataTableColumn<Trade>> = [
 
 const walletsColumns: Array<DataTableColumn<Wallet>> = [
   { id: "user", header: "User", cell: (row) => person(row.user, row.userId) },
-  { id: "type", header: "Wallet", cell: (row) => humanizeEnum(row.type) },
+  { id: "type", header: "Wallet", cell: (row) => walletLabel(row.type) },
   { id: "balance", header: "Balance", cell: (row) => <Money value={row.balance} showCurrency size="sm" />, nowrap: true },
   { id: "credit", header: "Total credit", cell: (row) => <Money value={row.totalCredit} showCurrency size="sm" />, nowrap: true },
   { id: "debit", header: "Total debit", cell: (row) => <Money value={row.totalDebit} showCurrency size="sm" />, nowrap: true },

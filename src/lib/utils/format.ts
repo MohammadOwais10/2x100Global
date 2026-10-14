@@ -191,6 +191,58 @@ export function humanizeEnum(value: string | null | undefined): string {
     .join(" ");
 }
 
+/**
+ * Product-facing names for wallet enum values. Kept here (rather than in the
+ * wallet components) so every surface — balances, tables, dropdowns — renders
+ * the same label.
+ */
+export const WALLET_LABELS: Record<string, string> = {
+  PRINCIPAL: "Principal",
+  TRADING_PROFIT: "Trading wallet bonus",
+  REFERRAL: "Sponsor",
+  DEPOSIT_BONUS: "Welcome Bonus",
+  RANK_BONUS: "Leadership Rank Bonus",
+  POOL_BONUS: "Salary bonus",
+  ADMIN_COMMISSION: "Admin commission",
+};
+
+/** Wallet enum value -> the product-facing wallet name. */
+export function walletLabel(value: string | null | undefined): string {
+  if (!value) return "—";
+  return WALLET_LABELS[value] ?? humanizeEnum(value);
+}
+
+/**
+ * Product-facing names for ledger entry types. Mirrors the wallet names where
+ * the two describe the same money movement (bonuses, trade profit), so the
+ * ledger and the wallet cards read consistently.
+ */
+export const LEDGER_LABELS: Record<string, string> = {
+  DEPOSIT: "Deposit",
+  DEPOSIT_BONUS: WALLET_LABELS.DEPOSIT_BONUS,
+  REFERRAL_BONUS: "Sponsor Bonus",
+  TRADE_ENTRY: "Trade Entry",
+  TRADE_PROFIT: WALLET_LABELS.TRADING_PROFIT,
+  ADMIN_COMMISSION: WALLET_LABELS.ADMIN_COMMISSION,
+  COMPOUND_TRANSFER: "Compound Transfer",
+  WITHDRAWAL: "Withdrawal",
+  WITHDRAWAL_FEE: "Withdrawal Fee",
+  PENALTY: "Penalty",
+  RANK_BONUS: WALLET_LABELS.RANK_BONUS,
+  POOL_BONUS: WALLET_LABELS.POOL_BONUS,
+  REFUND: "Refund",
+  ADJUSTMENT: "Adjustment",
+  TRADE_EXIT: "Trade Exit",
+  AUTO_TRADE_ENTRY: "Auto Trade Entry",
+  TRADE_CANCEL: "Trade Cancel",
+};
+
+/** Ledger enum value -> the product-facing transaction name. */
+export function ledgerLabel(value: string | null | undefined): string {
+  if (!value) return "—";
+  return LEDGER_LABELS[value] ?? humanizeEnum(value);
+}
+
 /** Initials for avatar fallbacks; falls back to the email local-part. */
 export function initialsOf(
   name: string | null | undefined,

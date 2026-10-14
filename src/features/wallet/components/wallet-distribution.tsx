@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { walletLabel } from "@/lib/utils/format";
 import { Money } from "@/components/common/money";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -20,7 +21,7 @@ import type { WalletSummary } from "@/types/models";
  *
  * One proportional bar plus its legend, rather than a grid of identical tiles:
  * the shape of the balance — how much is locked in Principal versus spendable
- * trading profit — is the question this answers, and a stacked bar answers it
+ * trading wallet profit — is the question this answers, and a stacked bar answers it
  * at a glance. The legend carries the exact figures.
  *
  * Production concerns handled here:
@@ -32,16 +33,6 @@ import type { WalletSummary } from "@/types/models";
  *   - bar segment width animates in on mount, and respects reduced-motion
  *   - the empty/zero state is explicit rather than six rows of $0.00
  */
-
-const WALLET_LABELS: Record<WalletType, string> = {
-  [WalletType.PRINCIPAL]: "Principal",
-  [WalletType.TRADING_PROFIT]: "Trading wallet bonus",
-  [WalletType.REFERRAL]: "Sponsor",
-  [WalletType.DEPOSIT_BONUS]: "Welcome Bonus",
-  [WalletType.RANK_BONUS]: "Leadership Rank Bonus",
-  [WalletType.POOL_BONUS]: "Salary bonus",
-  [WalletType.ADMIN_COMMISSION]: "Admin commission",
-};
 
 const WALLET_COLORS: Record<WalletType, string> = {
   [WalletType.PRINCIPAL]: "bg-chart-1",
@@ -156,7 +147,7 @@ export function WalletDistribution({
       >
         <p className="text-sm font-medium">No balance yet</p>
         <p className="text-muted-foreground max-w-sm text-xs">
-          Deposits, trading profit and bonuses will show up here, split across
+          Deposits, trading wallet profit and bonuses will show up here, split across
           your wallets.
         </p>
       </div>
@@ -200,7 +191,7 @@ export function WalletDistribution({
                       WALLET_COLORS[segment.type],
                     )}
                   />
-                  {WALLET_LABELS[segment.type]}
+                    {walletLabel(segment.type)}
                   <span className="font-medium">
                     {segment.percentage.toFixed(1)}%
                   </span>
@@ -238,7 +229,7 @@ export function WalletDistribution({
                     )}
                   />
                   <span className="text-muted-foreground truncate text-xs font-medium">
-                    {WALLET_LABELS[segment.type]}
+                  {walletLabel(segment.type)}
                   </span>
                 </span>
                 <span className="flex shrink-0 items-baseline gap-2">

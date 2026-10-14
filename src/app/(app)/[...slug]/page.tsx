@@ -53,6 +53,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { normalizeError } from "@/lib/api/errors";
+import { ledgerLabel, walletLabel } from "@/lib/utils/format";
 import {
   useChangePasswordMutation,
   useProfileQuery,
@@ -174,7 +175,7 @@ export default function UserPortalPage({
   if (route === "ranks") return <RanksPage />;
   if (route === "rewards/cycle-bonus") return <CycleBonusPage />;
   if (route === "rewards/salary-bonus") return <PoolBonusPage />;
-  if (route === "rewards/deposit-bonus") return <DepositBonusPage />;
+  if (route === "rewards/welcome-bonus") return <DepositBonusPage />;
   if (route === "notifications") return <NotificationsPage />;
   if (route === "settings") return <SettingsPage />;
   if (route === "tickets") return <SupportTicketsPage />;
@@ -204,7 +205,7 @@ function WalletPage() {
         {entries.map(([type, wallet], i) => (
           <StatCard
             key={type}
-            label={title(type)}
+            label={walletLabel(type)}
             value={<Money value={wallet?.balance} showCurrency />}
             hint={
               <>
@@ -357,7 +358,7 @@ function DepositPage() {
 
 const withdrawalColumns: DataTableColumn<Withdrawal>[] = [
   { id: "date", header: "Date", cell: (r) => date(r.createdAt), nowrap: true },
-  { id: "wallet", header: "Wallet", cell: (r) => title(r.walletType) },
+  { id: "wallet", header: "Wallet", cell: (r) => walletLabel(r.walletType) },
   {
     id: "amount",
     header: "Amount",
@@ -394,7 +395,7 @@ const withdrawalColumns: DataTableColumn<Withdrawal>[] = [
 function WithdrawalMobile({ row }: { row: Withdrawal }) {
   return (
     <MobileCard>
-      <Row label="Wallet">{title(row.walletType)}</Row>
+      <Row label="Wallet">{walletLabel(row.walletType)}</Row>
       <Row label="Amount">
         <Money value={row.amount} showCurrency />
       </Row>
@@ -563,7 +564,7 @@ function TransactionsPage() {
   const q = useLedgersQuery(pageArgs(page));
   const columns: DataTableColumn<Ledger>[] = [
     { id: "date", header: "Date", cell: (r) => date(r.createdAt) },
-    { id: "type", header: "Type", cell: (r) => title(r.type) },
+    { id: "type", header: "Type", cell: (r) => ledgerLabel(r.type) },
     {
       id: "description",
       header: "Description",
@@ -601,7 +602,7 @@ function TransactionsPage() {
         getRowId={(r) => r.id}
         renderMobileCard={(r) => (
           <MobileCard>
-            <Row label="Type">{title(r.type)}</Row>
+            <Row label="Type">{ledgerLabel(r.type)}</Row>
             {r.description && <Row label="Remark">{r.description}</Row>}
             <Row label="Credit">
               <Money value={r.credit} />
