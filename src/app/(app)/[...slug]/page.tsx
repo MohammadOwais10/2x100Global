@@ -173,7 +173,7 @@ export default function UserPortalPage({
   if (route === "sponsor/earnings") return <SponsorEarningsPage />;
   if (route === "ranks") return <RanksPage />;
   if (route === "rewards/cycle-bonus") return <CycleBonusPage />;
-  if (route === "rewards/pool-bonus") return <PoolBonusPage />;
+  if (route === "rewards/salary-bonus") return <PoolBonusPage />;
   if (route === "rewards/deposit-bonus") return <DepositBonusPage />;
   if (route === "notifications") return <NotificationsPage />;
   if (route === "settings") return <SettingsPage />;
@@ -1230,7 +1230,7 @@ function PoolBonusPage() {
       destinationAddress: walletAddress,
       withdrawPassword,
     }).unwrap();
-    toast.success("Pool bonus request submitted. Pending admin approval.");
+    toast.success("Salary bonus request submitted. Pending admin approval.");
     setAmount("");
     setWalletAddress("");
   }
@@ -1298,14 +1298,14 @@ function PoolBonusPage() {
   return (
     <>
       <PageHeader
-        title="Pool Bonus"
-        description="Request to withdraw your pool bonus. Admin approval required."
+        title="Salary Bonus"
+        description="Request to withdraw your salary bonus. Admin approval required."
       />
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>New pool bonus request</CardTitle>
+          <CardTitle>New salary bonus request</CardTitle>
           <CardDescription>
-            Submit a request to withdraw your pool bonus. An admin will review
+            Submit a request to withdraw your salary bonus. An admin will review
             and approve, reject, or update the amount.
           </CardDescription>
         </CardHeader>
@@ -1355,7 +1355,7 @@ function PoolBonusPage() {
         onOpenChange={setPasswordDialogOpen}
         onConfirm={confirmRequest}
         loading={createMutation.isLoading}
-        title="Confirm pool bonus withdrawal"
+        title="Confirm salary bonus withdrawal"
       />
       <PageHeader title="Request history" />
       <DataTable
@@ -1417,7 +1417,7 @@ function DepositBonusPage() {
   return (
     <>
       <PageHeader
-        title="Deposit Bonus"
+        title="Welcome Bonus"
         description="Actual bonuses recorded on your deposit history."
       />
       <div className="mb-6">
@@ -1439,7 +1439,7 @@ function DepositBonusPage() {
         getRowId={(r) => r.id}
         renderMobileCard={(r) => <DepositMobile row={r} />}
         onPageChange={setPage}
-        emptyState={{ title: "No deposit bonuses on this page" }}
+        emptyState={{ title: "No welcome bonuses on this page" }}
       />
     </>
   );

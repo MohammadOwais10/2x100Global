@@ -290,7 +290,7 @@ export default function ProfilePage() {
                 Withdraw Password
               </CardTitle>
               <CardDescription>
-                Required on every withdrawal and pool bonus request. Changing
+                Required on every withdrawal and salary bonus request. Changing
                 it locks withdrawals for 24 hours.
               </CardDescription>
             </CardHeader>

@@ -119,7 +119,7 @@ export const depositsApi = baseApi.injectEndpoints({
     ),
 
     /**
-     * Approving credits the principal wallet, pays the deposit bonus and
+     * Approving credits the principal wallet, pays the welcome bonus and
      * cascades sponsor bonuses up the sponsor chain — which can promote a
      * sponsor's rank. Hence the broad invalidation: anything less leaves a
      * sponsor looking at a stale balance immediately after an approval.

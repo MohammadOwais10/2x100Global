@@ -639,10 +639,10 @@ export interface AdminAnalytics extends AdminDashboard {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pool Bonus Request                                                          */
+/* Salary Bonus Request                                                        */
 /* -------------------------------------------------------------------------- */
 
-/** A pool bonus request created by a user, pending admin approval. */
+/** A salary bonus request created by a user, pending admin approval. */
 export interface PoolBonusRequest {
   id: UUID;
   userId: UUID;

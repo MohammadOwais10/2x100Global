@@ -606,7 +606,7 @@ const ranksColumns: Array<DataTableColumn<Rank>> = [
   { id: "rank", header: "Rank", cell: (row) => <StatusBadge status={row.level} showIcon={false} /> },
   { id: "direct", header: "Direct sponsors", cell: (row) => formatCount(row.directSponsors), align: "right" },
   { id: "team", header: "Team size", cell: (row) => formatCount(row.teamSize), align: "right" },
-  { id: "bonus", header: "Rank bonus", cell: (row) => <Money value={row.totalRankBonusEarned} showCurrency size="sm" />, nowrap: true },
+  { id: "bonus", header: "Leadership Rank Bonus", cell: (row) => <Money value={row.totalRankBonusEarned} showCurrency size="sm" />, nowrap: true },
   { id: "achieved", header: "Achieved", cell: (row) => formatDateTime(row.achievedAt), nowrap: true },
 ];
 
@@ -1193,7 +1193,7 @@ function AnalyticsPage() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pool Bonus Requests — admin approval workflow                               */
+/* Salary Bonus Requests — admin approval workflow                               */
 /* -------------------------------------------------------------------------- */
 
 function PoolBonusRequestsPage() {
@@ -1266,7 +1266,7 @@ function PoolBonusRequestsPage() {
 
   return (
     <>
-      <PageHeader title="Pool Bonus Requests" description="Review and approve, reject, or update pool bonus withdrawal requests from users." />
+      <PageHeader title="Salary Bonus Requests" description="Review and approve, reject, or update salary bonus withdrawal requests from users." />
       <div className="mb-4 flex items-center gap-3">
         <Label htmlFor="pool-status-filter" className="text-sm">Filter:</Label>
         <select id="pool-status-filter" className="border-input bg-background h-9 rounded-md border px-3 text-sm" value={status} onChange={(e) => { setStatus(e.target.value as PoolBonusRequestStatus | ""); setPage(1); }}>
@@ -1333,12 +1333,12 @@ function PoolBonusRequestsPage() {
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>Reject request</CardTitle>
-              <CardDescription>Provide a reason for rejecting this pool bonus request.</CardDescription>
+              <CardDescription>Provide a reason for rejecting this salary bonus request.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="reject-reason">Rejection reason</Label>
-                <Input id="reject-reason" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="e.g., Insufficient pool bonus balance" />
+                <Input id="reject-reason" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="e.g., Insufficient salary bonus balance" />
               </div>
               <div className="flex gap-2">
                 <Button variant="destructive" onClick={() => handleReject(rejectingId)} disabled={rejectMutation.isLoading}>{rejectMutation.isLoading ? "Processing…" : "Reject"}</Button>

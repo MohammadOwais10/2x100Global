@@ -164,13 +164,13 @@ export const USER_NAV: NavSection[] = [
       //   keywords: ["10 day", "cycle", "reward"],
       // },
       {
-        label: "Pool Bonus",
+        label: "Salary Bonus",
         href: ROUTES.poolBonus,
         icon: Coins,
         keywords: ["pool", "bonus", "admin approval", "request"],
       },
       {
-        label: "Deposit Bonus",
+        label: "Welcome Bonus",
         href: ROUTES.depositBonus,
         icon: Gift,
         keywords: ["5%", "bonus", "incentive"],
@@ -296,7 +296,7 @@ export const ADMIN_NAV: NavSection[] = [
       //   keywords: ["10 day", "payouts"],
       // },
       {
-        label: "Pool Bonus Requests",
+        label: "Salary Bonus Requests",
         href: ROUTES.admin.poolBonusRequests,
         icon: Coins,
         keywords: ["pool", "bonus", "approval", "requests"],
