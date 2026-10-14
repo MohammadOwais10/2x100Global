@@ -77,11 +77,11 @@ export function Sidebar({
           className="group rounded-lg outline-none focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2"
           aria-label="2X100 Global — home"
         >
-          <BrandMark className="size-40 transition-transform duration-300 group-hover:scale-105" />
+          <BrandMark className="size-9 transition-transform duration-300 group-hover:scale-105" />
         </Link>
       </div>
 
-      <ScrollArea className="flex-1 overflow-hidden">
+      <ScrollArea className="flex-1 overflow-hidden pt-2">
         <nav className="space-y-6 px-3 pb-4" aria-label="Main">
           {sections.map((section, sectionIndex) => (
             <div key={section.label ?? `section-${sectionIndex}`}>

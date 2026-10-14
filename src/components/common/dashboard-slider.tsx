@@ -106,7 +106,7 @@ export function DashboardSlider() {
   if (isLoading || posts.length === 0) return null;
 
   return (
-    <div className="relative mb-6 rounded-2xl border bg-card overflow-hidden">
+    <div className="relative rounded-2xl border bg-card overflow-hidden">
       <div className="relative aspect-[21/8] w-full sm:aspect-[21/6]">
         {/* 3D Carousel Container */}
         <div
@@ -334,7 +334,7 @@ export function NewsTicker() {
   if (isLoading || news.length === 0) return null;
 
   return (
-    <div className="mb-6 flex items-center gap-3 rounded-xl border bg-card px-4 py-3">
+    <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3">
       <div className="flex shrink-0 items-center gap-2 text-primary">
         <Newspaper className="size-4" />
         <span className="text-sm font-semibold">News</span>

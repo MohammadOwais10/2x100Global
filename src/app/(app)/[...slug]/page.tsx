@@ -770,7 +770,9 @@ function TradingPage() {
           <LiveTradingChart showHeading={false} />
         </CardContent>
       </Card>
-      <SessionCodeCard />
+      <div className="mb-6">
+        <SessionCodeCard />
+      </div>
       <div className="mb-6">
         <TradePlanProgress />
       </div>

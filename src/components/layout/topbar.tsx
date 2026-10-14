@@ -5,14 +5,22 @@ import { Menu, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { UserMenu } from "./user-menu";
 import { useAppDispatch } from "@/store/hooks";
-import { commandPaletteSet, mobileNavToggled } from "@/store/slices/ui-slice";
+import {
+  commandPaletteToggled,
+  mobileNavToggled,
+} from "@/store/slices/ui-slice";
 
 /**
  * Application top bar.
  *
  * Sticky with a translucent backdrop so table headers scroll under it rather
  * than colliding — a small thing that makes long ledger pages feel composed.
+ *
+ * The right side holds the persistent account controls — theme, then the avatar
+ * that carries every account detail behind a click. The sidebar rail keeps only
+ * sign out, so this is the one place identity lives.
  *
  * The search control is a button, not an input. It opens the ⌘K palette, which
  * searches navigation, and later transactions and users. A dead-looking input
@@ -51,12 +59,39 @@ export function Topbar({
         <Menu className="size-5" />
       </Button>
 
+      <button
+        type="button"
+        onClick={() => dispatch(commandPaletteToggled())}
+        className={cn(
+          "text-muted-foreground hover:text-foreground hover:border-border",
+          "hidden h-8 w-full max-w-72 items-center gap-2 rounded-lg border border-dashed px-3 text-sm",
+          "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex",
+        )}
+      >
+        <Search className="size-4" />
+        <span>Search</span>
+        {/* Platform-specific glyph. Resolved during render rather than in an
+            effect, so the server's guess is simply overwritten on hydration. */}
+        <kbd
+          className="text-muted-foreground/70 ml-auto font-mono text-[0.6875rem]"
+          suppressHydrationWarning
+        >
+          {isAppleDevice() ? "⌘K" : "Ctrl K"}
+        </kbd>
+      </button>
 
       <div className="flex-1" />
 
       {children}
 
       <ThemeToggle />
+
+      <UserMenu />
     </header>
   );
+}
+
+function isAppleDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /mac|iphone|ipad|ipod/i.test(navigator.userAgent);
 }
