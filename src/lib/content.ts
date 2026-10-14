@@ -143,10 +143,158 @@ export const autoTrading = {
   closing: "Smart Trading. Better Opportunities. A Brighter Tomorrow.",
 };
 
+export const intro = {
+  eyebrow: "Introduction",
+  title: "Welcome to 2X100 Global",
+  body: "2X100 Global is a technology-driven company focused on automated digital asset trading solutions. Our objective is to provide individuals worldwide with access to advanced trading technology through a simple, transparent, and user-friendly platform.",
+};
+
+export const advantages = {
+  eyebrow: "Key Business Advantages",
+  title: "A Stronger Ecosystem for a Brighter Tomorrow",
+  intro:
+    "We create opportunities through technology, transparency, and strategic global partnerships.",
+  items: [
+    {
+      title: "AI-Powered Trading Precision",
+      detail:
+        "Advanced artificial intelligence continuously analyzes global market data to identify potential trading opportunities and improve execution efficiency.",
+    },
+    {
+      title: "Long-Term Strategic Partnership",
+      detail:
+        "2X100 Global maintains a long-term cooperation agreement focused on technology development and ecosystem growth.",
+    },
+    {
+      title: "Regulatory Compliance",
+      detail:
+        "The platform operates through a structured framework designed to support transparency, operational integrity, and business sustainability.",
+    },
+    {
+      title: "Fund Security Focus",
+      detail:
+        "Strong operational systems, infrastructure management, and capital resources support platform stability and member confidence.",
+    },
+    {
+      title: "Multiple Income Opportunities",
+      detail:
+        "Members can benefit from trading activities as well as additional referral and team-development incentives available within the platform structure.",
+    },
+  ],
+};
+
+export const aiTechnology = {
+  eyebrow: "AI Technology",
+  title: "The Power Behind 2X100 Global",
+  intro:
+    "The 2X100 Global AI engine combines machine learning, predictive analytics, and automated execution technology to support efficient market participation.",
+  specs: [
+    { label: "Accuracy Rate", value: "99.6 Percentage" },
+    { label: "Data Processing", value: "10,000+ Data Points" },
+    { label: "Trade Execution", value: "Fully Automated" },
+    { label: "Analysis Frequency", value: "24/7 Market Monitoring" },
+    { label: "Learning System", value: "Self-Improving AI" },
+  ],
+  howTitle: "How Our AI Works",
+  how: [
+    { title: "Data Collection", detail: "Real-time global market data capture." },
+    { title: "Market Analysis", detail: "Real-time global market analysis." },
+    {
+      title: "Pattern Recognition",
+      detail: "Identifies market trends and opportunities.",
+    },
+    {
+      title: "Risk Assessment",
+      detail: "AI-driven risk analysis and protection.",
+    },
+    {
+      title: "Trade Execution",
+      detail: "Fast and accurate trade execution.",
+    },
+    {
+      title: "Performance Optimization",
+      detail: "Continuous strategy improvement.",
+    },
+  ],
+  benefitsTitle: "Member Benefits",
+  benefits: [
+    {
+      title: "Consistent Opportunities",
+      detail: "Consistent and transparent opportunities.",
+    },
+    { title: "No Experience Required", detail: "No trading experience required." },
+    { title: "Simple Platform", detail: "Simple and user-friendly platform." },
+    {
+      title: "Automated Process",
+      detail: "Complete automation from analysis to execution.",
+    },
+    {
+      title: "Transparent Reporting",
+      detail: "Real-time trade records and performance.",
+    },
+    {
+      title: "Professional Access",
+      detail: "Institutional-grade AI technology.",
+    },
+    {
+      title: "Continuous Improvement",
+      detail: "Learns and adapts with market changes.",
+    },
+  ],
+  closing: "Intelligence Drives Opportunity",
+};
+
+export const incomeStreams = {
+  eyebrow: "Total Income Streams",
+  title: "7 Major Income Sources",
+  intro:
+    "2X100 Global provides seven major income sources alongside additional member benefits.",
+  sources: [
+    { name: "Welcome Bonus", detail: "Instant 5% bonus on every qualifying deposit." },
+    { name: "Sponsor Bonus", detail: "Direct referral commission on member deposits." },
+    {
+      name: "AI Auto Trade Income",
+      detail: "Consistent returns from AI automated trading.",
+    },
+    {
+      name: "Leadership Rank Bonus",
+      detail: "Recurring rewards as you climb the leadership ranks.",
+    },
+    {
+      name: "Advanced Trade Income",
+      detail: "Additional AI trade rewards on qualifying referrals.",
+    },
+    {
+      name: "AI Trading System Commissions",
+      detail: "AI-powered trading system commission earnings.",
+    },
+    { name: "24/7 Withdrawals", detail: "Withdraw your earnings at any time." },
+  ],
+  extra: [
+    "Lifestyle Rewards Program",
+    "Global Leadership Recognition",
+    "Automated AI Trading System",
+    "Unlimited Team Growth Potential",
+  ],
+};
+
+export const closing = {
+  eyebrow: "Thank You",
+  title: "Complete Investment & Wealth Building Plan",
+  lines: [
+    "Smart Investment",
+    "Global Opportunities",
+    "Financial Security",
+    "Brighter Tomorrow",
+  ],
+  note: "Together for a Better Tomorrow",
+};
+
 export const navLinks = [
   { href: "#platform", label: "Platform" },
   { href: "#mission", label: "Mission" },
   { href: "#offerings", label: "Offerings" },
   { href: "#system", label: "Auto-Trading" },
+  { href: "#income", label: "Income" },
   { href: "#leadership", label: "Leadership" },
 ] as const;

@@ -735,7 +735,7 @@
 }
 
 .animate-news-scroll {
-  animation: news-scroll 20s linear infinite;
+  animation: news-scroll 30s linear infinite;
 }
 
 .animate-news-scroll:hover {

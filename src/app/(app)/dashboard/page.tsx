@@ -55,13 +55,12 @@ import {
   useTradesQuery,
 } from "@/features/portal/api/portal-api";
 
+import { WalletDistribution } from "@/features/wallet/components/wallet-distribution";
+
 import { normalizeError } from "@/lib/api/errors";
 import { formatDate, formatDateTime } from "@/lib/utils/format";
 import { ROUTES } from "@/config/routes";
-import {
-  USER_WALLET_TYPES,
-  WalletType,
-} from "@/types/enums";
+import { USER_WALLET_TYPES } from "@/types/enums";
 
 import { useAppSelector } from "@/store/hooks";
 import { selectCurrentUser } from "@/store/slices/auth-slice";
@@ -91,16 +90,6 @@ import { selectCurrentUser } from "@/store/slices/auth-slice";
  * data inside an authenticated surface is the fastest way to make a real
  * product read as a demo.
  */
-
-const WALLET_LABELS: Record<WalletType, string> = {
-  [WalletType.PRINCIPAL]: "Principal",
-  [WalletType.TRADING_PROFIT]: "Trading profit",
-  [WalletType.REFERRAL]: "Referral",
-  [WalletType.DEPOSIT_BONUS]: "Deposit bonus",
-  [WalletType.RANK_BONUS]: "Rank bonus",
-  [WalletType.POOL_BONUS]: "Pool bonus",
-  [WalletType.ADMIN_COMMISSION]: "Admin commission",
-};
 
 /**
  * Trade statistics arrive as JS numbers (the backend does `Number(Decimal)`);
@@ -174,6 +163,13 @@ export default function DashboardPage() {
 
       <NewsTicker />
 
+      {/* ---- Announcements -------------------------------------------------- */}
+      <section>
+        <SectionHeader title="Announcements" />
+        <DashboardSlider />
+      </section>
+      
+
       <SessionCodeCard compact />
 
       {/* ---- Balance -------------------------------------------------------- */}
@@ -207,57 +203,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="grid gap-px overflow-hidden rounded-lg border border-border/60 bg-border/40 sm:grid-cols-2 xl:grid-cols-3">
-            {loading
-              ? Array.from({ length: 6 }, (_, index) => (
-                  <div key={index} className="bg-card space-y-2 p-3.5">
-                    <Skeleton className="h-3 w-24" />
-                    <Skeleton className="h-5 w-28" />
-                    <Skeleton className="h-3 w-32" />
-                  </div>
-                ))
-              : USER_WALLET_TYPES.map((type) => {
-                  const entry = wallet.data?.wallets[type];
-                  return (
-                    <Link
-                      key={type}
-                      href={ROUTES.wallet}
-                      className={cn(
-                        "bg-card hover:bg-muted/40 group flex flex-col gap-1 p-3.5",
-                        "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-                      )}
-                    >
-                      <span className="text-muted-foreground group-hover:text-foreground text-xs font-medium transition-colors">
-                        {WALLET_LABELS[type]}
-                      </span>
-                      <Money
-                        value={entry?.balance}
-                        showCurrency
-                        size="lg"
-                        className="leading-none"
-                      />
-                      <span
-                        className="flex items-center gap-1.5"
-                        title="Lifetime credited / debited"
-                      >
-                        <Money
-                          value={entry?.totalCredit}
-                          size="xs"
-                          variant="signed"
-                          showTrendIcon={false}
-                        />
-                        <span className="text-muted-foreground/50">·</span>
-                        <Money
-                          value={entry?.totalDebit}
-                          size="xs"
-                          variant="signed"
-                          showTrendIcon={false}
-                        />
-                      </span>
-                    </Link>
-                  );
-                })}
-          </div>
+          <WalletDistribution summary={wallet.data} loading={loading} />
         </CardContent>
       </Card>
 
@@ -549,11 +495,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* ---- Announcements -------------------------------------------------- */}
-      <section>
-        <SectionHeader title="Announcements" />
-        <DashboardSlider />
-      </section>
     </div>
   );
 }
