@@ -70,7 +70,7 @@ export default async function RootLayout({
             role: session.role,
             name: null,
             referralCode: "",
-            rank: "LV1",
+            rank: "NONE",
             autoTradeStatus: false,
             status: "ACTIVE",
           },

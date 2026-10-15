@@ -95,7 +95,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <Feature
               icon={TrendingUp}
               title="Seven-tier rank progression"
-              description="Rank and cycle bonuses scale with the depth of your network."
+              description="Rank and salary bonuses scale with the depth of your network."
             />
             <Feature
               icon={ShieldCheck}

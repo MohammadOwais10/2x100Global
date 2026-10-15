@@ -14,7 +14,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useCreateDepositMutation, useDepositWalletAddressQuery } from "@/features/deposits/api/deposits-api";
 import { normalizeError } from "@/lib/api/errors";
 import { CopyButton } from "@/components/common/copy-button";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
+
+// Fixed deposit packages — users can only deposit one of these amounts (5% welcome bonus applies to all)
+const DEPOSIT_PACKAGES = [100, 300, 500, 1000, 2000, 5000, 10000] as const;
+const WELCOME_BONUS_RATE = 0.05;
 
 const USDT_ABI = [
   {
@@ -49,7 +54,6 @@ export function DepositForm() {
   const [manualTxHash, setManualTxHash] = useState("");
   const [manualSenderAddress, setManualSenderAddress] = useState("");
   const [isPendingPayment, setIsPendingPayment] = useState(false);
-  const MIN_DEPOSIT = 100; // Backend requires minimum 100 USDT
 
   // Prefer admin-configured deposit wallet, fall back to env
   const companyWallet =
@@ -68,14 +72,8 @@ export function DepositForm() {
   }, [address, isConnected, companyWallet, usdtContract]);
 
   const executeWalletPayment = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    // Validate minimum deposit amount
-    if (parseFloat(amount) < MIN_DEPOSIT) {
-      toast.error(`Minimum deposit is ${MIN_DEPOSIT} USDT`);
+    if (!amount || !DEPOSIT_PACKAGES.includes(parseFloat(amount) as (typeof DEPOSIT_PACKAGES)[number])) {
+      toast.error("Please select a deposit package");
       return;
     }
 
@@ -155,14 +153,8 @@ export function DepositForm() {
       return;
     }
 
-    if (!amount || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    // Validate minimum deposit amount
-    if (parseFloat(amount) < MIN_DEPOSIT) {
-      toast.error(`Minimum deposit is ${MIN_DEPOSIT} USDT`);
+    if (!amount || !DEPOSIT_PACKAGES.includes(parseFloat(amount) as (typeof DEPOSIT_PACKAGES)[number])) {
+      toast.error("Please select a deposit package");
       return;
     }
 
@@ -320,21 +312,57 @@ export function DepositForm() {
               </div>
             )}
             
-            {/* Common Amount Field */}
+            {/* Deposit Package Selection */}
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount (USDT)</Label>
-              <Input
-                id="amount"
-                type="number"
-                min={MIN_DEPOSIT}
-                step="any"
-                placeholder={`Minimum ${MIN_DEPOSIT} USDT`}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                disabled={isLoading}
-              />
-              <p className="text-xs text-muted-foreground">Minimum deposit: {MIN_DEPOSIT} USDT</p>
+              <Label>Select Deposit Package (USDT)</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {DEPOSIT_PACKAGES.map((pkg) => {
+                  const isSelected = amount === String(pkg);
+                  return (
+                    <button
+                      key={pkg}
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => setAmount(String(pkg))}
+                      className={cn(
+                        "flex flex-col items-center justify-center rounded-lg border p-3 transition-colors",
+                        isSelected
+                          ? "border-primary bg-primary/10 ring-1 ring-primary"
+                          : "border-border bg-muted/50 hover:bg-muted"
+                      )}
+                    >
+                      <span className="text-base font-semibold">${pkg.toLocaleString()}</span>
+                      <span className="text-xs text-muted-foreground">
+                        +${(pkg * WELCOME_BONUS_RATE).toLocaleString()} bonus
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Every package includes a 5% welcome bonus
+              </p>
             </div>
+
+            {/* Selected Package Summary */}
+            {amount && (
+              <div className="space-y-1 rounded-lg bg-muted p-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Deposit Amount</span>
+                  <span>${parseFloat(amount).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Welcome Bonus (5%)</span>
+                  <span className="text-green-600">
+                    +${(parseFloat(amount) * WELCOME_BONUS_RATE).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t pt-1 font-medium">
+                  <span>Trading Balance</span>
+                  <span>${(parseFloat(amount) * (1 + WELCOME_BONUS_RATE)).toLocaleString()}</span>
+                </div>
+              </div>
+            )}
 
             {/* Wallet Mode Fields */}
             {depositMode === "wallet" && (

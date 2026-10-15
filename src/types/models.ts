@@ -411,8 +411,32 @@ export interface RankHistoryEntry {
   changedAt: ISODateString;
 }
 
+export interface RankStats {
+  directReferrals: number;
+  qualifyingDirects: number;
+  teamSize: number;
+  /** Downline members at each rank level or above, e.g. achieversByLevel.LV1 */
+  achieversByLevel: Partial<Record<RankLevel, number>>;
+}
+
+export interface RankRequirement {
+  level: RankLevel;
+  name: string;
+  qualifyingDirects: number;
+  minDirectDeposit: number;
+  lv1AchieverCount: number;
+  higherAchieverRank?: RankLevel;
+  higherAchieverCount?: number;
+  teamSize: number;
+  rankBonus: number;
+  cycleBonus: number;
+}
+
 export interface CurrentRank {
   currentRank: RankLevel;
+  stats: RankStats;
+  cycleDurationDays: number;
+  requirements: RankRequirement[];
   rankDetails: Rank | null;
   history: RankHistoryEntry[];
 }

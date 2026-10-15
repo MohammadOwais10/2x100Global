@@ -11,6 +11,7 @@ import {
   Clock,
   Copy,
   Check,
+  Lock,
   Gift,
   Loader2,
   ShieldCheck,
@@ -52,6 +53,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import { normalizeError } from "@/lib/api/errors";
 import {
   useChangePasswordMutation,
@@ -108,6 +111,7 @@ import {
 import type { Post, NewsItem } from "@/types/models";
 import { WithdrawalWalletType, PoolBonusRequestType } from "@/types/enums";
 import type { UUID } from "@/types/api";
+import { RankLevel } from "@/types/enums";
 import type {
   AppNotification,
   CycleBonus,
@@ -115,6 +119,8 @@ import type {
   Ledger,
   PoolBonusRequest,
   RankHistoryEntry,
+  RankRequirement,
+  RankStats,
   RecentTrade,
   Referral,
   ReferralBonus,
@@ -1095,6 +1101,53 @@ function RanksPage() {
     },
     { id: "reason", header: "Reason", cell: (r) => r.changeReason ?? "—" },
   ];
+
+  const ORDER: RankLevel[] = [
+    "NONE",
+    "LV1",
+    "LV2",
+    "LV3",
+    "LV4",
+    "LV5",
+    "LV6",
+    "LV7",
+  ];
+  const currentIdx = ORDER.indexOf(q.data?.currentRank ?? "NONE");
+  const stats = q.data?.stats;
+  const requirements = q.data?.requirements ?? [];
+
+  const requirementRows = (def: RankRequirement, s?: RankStats) => {
+    if (def.level === "LV1") {
+      return [
+        {
+          label: `Directs with $${def.minDirectDeposit}+ deposit`,
+          current: s?.qualifyingDirects ?? 0,
+          required: def.qualifyingDirects,
+        },
+      ];
+    }
+    const rows = [
+      {
+        label: "LV1+ achievers in team",
+        current: s?.achieversByLevel?.LV1 ?? 0,
+        required: def.lv1AchieverCount,
+      },
+    ];
+    if (def.higherAchieverRank && def.higherAchieverCount) {
+      rows.push({
+        label: `${def.higherAchieverRank}+ achievers in team`,
+        current: s?.achieversByLevel?.[def.higherAchieverRank] ?? 0,
+        required: def.higherAchieverCount,
+      });
+    }
+    rows.push({
+      label: "Team size",
+      current: s?.teamSize ?? 0,
+      required: def.teamSize,
+    });
+    return rows;
+  };
+
   return (
     <>
       <PageHeader
@@ -1110,15 +1163,97 @@ function RanksPage() {
         />
         <StatCard
           label="Direct referrals"
-          value={q.data?.rankDetails?.directReferrals ?? 0}
+          value={stats?.directReferrals ?? q.data?.rankDetails?.directReferrals ?? 0}
           loading={q.isLoading}
         />
         <StatCard
           label="Team size"
-          value={q.data?.rankDetails?.teamSize ?? 0}
+          value={stats?.teamSize ?? q.data?.rankDetails?.teamSize ?? 0}
           loading={q.isLoading}
         />
       </div>
+
+      <PageHeader
+        title="Rank levels"
+        description="Complete the requirements to unlock each rank."
+      />
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {requirements.map((def) => {
+          const levelIdx = ORDER.indexOf(def.level);
+          const isActive = levelIdx === currentIdx;
+          const isAchieved = levelIdx < currentIdx;
+          const isNext = levelIdx === currentIdx + 1;
+
+          return (
+            <div
+              key={def.level}
+              className={cn(
+                "rounded-lg border border-border bg-card p-4 space-y-3 shadow-sm",
+                isActive && "border-primary ring-1 ring-primary",
+                isAchieved && "border-green-500/60",
+                isNext && "border-yellow-500/60"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <RankBadge rank={def.level} />
+                {isActive && (
+                  <span className="text-xs font-medium text-primary">Current</span>
+                )}
+                {isAchieved && (
+                  <span className="flex items-center gap-1 text-xs font-medium text-green-500">
+                    <Check className="size-3" /> Achieved
+                  </span>
+                )}
+                {isNext && (
+                  <span className="text-xs font-medium text-yellow-500">Next</span>
+                )}
+                {!isActive && !isAchieved && !isNext && (
+                  <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                    <Lock className="size-3" /> Locked
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-2.5">
+                {requirementRows(def, stats).map((r) => {
+                  const done = Math.min(r.current, r.required);
+                  const remaining = Math.max(0, r.required - r.current);
+                  const pct = r.required > 0 ? (done / r.required) * 100 : 100;
+                  return (
+                    <div key={r.label} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-foreground/80">{r.label}</span>
+                        <span className="font-medium">
+                          {done}/{r.required}
+                        </span>
+                      </div>
+                      <Progress value={pct} className="h-2" />
+                      {remaining > 0 ? (
+                        <p className="text-xs text-foreground/60">
+                          {remaining.toLocaleString()} more needed
+                        </p>
+                      ) : (
+                        <p className="flex items-center gap-1 text-xs font-medium text-green-500">
+                          <Check className="size-3" /> Complete
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="border-t border-border pt-2 text-xs text-foreground/70">
+                Rank bonus <span className="font-semibold text-foreground">${def.rankBonus.toLocaleString()}</span>
+                {" · "}
+                Salary bonus <span className="font-semibold text-foreground">${def.cycleBonus.toLocaleString()}</span>
+                {" "}
+                every {q.data?.cycleDurationDays ?? 10} days
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <PageHeader title="Rank history" />
       <DataTable
         columns={columns}
@@ -1173,8 +1308,8 @@ function CycleBonusPage() {
   return (
     <>
       <PageHeader
-        title="Cycle Bonus"
-        description="Rank and cycle rewards from completed eligibility periods."
+        title="Salary Bonus"
+        description="Fixed rewards credited every cycle for achieved ranks."
       />
       <DataTable
         columns={columns}

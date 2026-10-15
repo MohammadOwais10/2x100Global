@@ -118,7 +118,7 @@ export default function AdminOverviewPage() {
             index={9}
           />
           <StatCard
-            label="Cycle bonuses"
+            label="Salary bonuses"
             value={<AnimatedNumber value={data?.totalCycleBonuses} />}
             icon={Percent}
             accent="profit"

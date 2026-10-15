@@ -2007,7 +2007,7 @@ export default function AdminModulePage() {
     case ROUTES.admin.rankReports:
       return <AdminListPage title="Ranks" description="Review achieved ranks, team qualification, and bonuses." icon={Trophy} columns={ranksColumns} useListQuery={useAdminRanksQuery} getRowId={(row) => row.id} />;
     case ROUTES.admin.cycleBonusReports:
-      return <AdminListPage title="Cycle Bonus" description="Review cycle eligibility, periods, and credited rewards." icon={Medal} columns={cycleColumns} useListQuery={useAdminCycleBonusesQuery} getRowId={(row) => row.id} statusOptions={["PENDING", "CREDITED", "FAILED"]} />;
+      return <AdminListPage title="Salary Bonus" description="Review salary bonus eligibility, periods, and credited rewards." icon={Medal} columns={cycleColumns} useListQuery={useAdminCycleBonusesQuery} getRowId={(row) => row.id} statusOptions={["PENDING", "CREDITED", "FAILED"]} />;
     case ROUTES.admin.poolBonusRequests:
       return <PoolBonusRequestsPage />;
     case ROUTES.admin.posts:

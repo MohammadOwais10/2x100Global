@@ -173,7 +173,9 @@ export function RankBadge({
   className?: string;
   size?: "sm" | "md";
 }) {
-  if (!rank) return <span className="text-muted-foreground text-sm">—</span>;
+  if (!rank || rank === "NONE") {
+    return <span className="text-muted-foreground text-sm">No rank</span>;
+  }
 
   const level = Number.parseInt(rank.replace(/\D/g, ""), 10) || 1;
   const colour = `var(--rank-${Math.min(Math.max(level, 1), 7)})`;
