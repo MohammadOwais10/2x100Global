@@ -261,7 +261,7 @@ function MoveToPrincipalCard() {
     if (!(value > 0)) return toast.error("Enter a positive amount.");
     if (value > selectedBalance)
       return toast.error(
-        `Amount exceeds ${title(sourceWallet)} balance ($${selectedBalance.toFixed(2)}).`,
+        `Amount exceeds ${walletLabel(sourceWallet)} balance ($${selectedBalance.toFixed(2)}).`,
       );
     setConfirmOpen(true);
   }
@@ -311,7 +311,7 @@ function MoveToPrincipalCard() {
             >
               {TRANSFER_SOURCES.map((v) => (
                 <option key={v} value={v}>
-                  {title(v)} — $
+                  {walletLabel(v)} — $
                   {Number(
                     summary.data?.wallets[v]?.balance ?? 0,
                   ).toFixed(2)}
@@ -340,7 +340,7 @@ function MoveToPrincipalCard() {
         </form>
         {disabled && (
           <p className="text-muted-foreground mt-3 text-xs">
-            {title(sourceWallet)} has no balance to move yet.
+            {walletLabel(sourceWallet)} has no balance to move yet.
           </p>
         )}
       </CardContent>
@@ -351,7 +351,7 @@ function MoveToPrincipalCard() {
         description={
           <>
             Moving <strong>${Number(amount || 0).toFixed(2)}</strong> from{" "}
-            {title(sourceWallet)} to Principal adds it to your stake — but your
+            {walletLabel(sourceWallet)} to Principal adds it to your stake — but your
             trade-plan counter will <strong>restart from 0</strong>. You will
             need <strong>140 more completed trades</strong> before your next
             penalty-free withdrawal.

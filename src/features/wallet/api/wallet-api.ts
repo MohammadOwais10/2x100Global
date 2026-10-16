@@ -32,8 +32,10 @@ export const walletApi = baseApi.injectEndpoints({
 
         const wallets: Partial<Record<WalletType, WalletSummaryEntry>> = {};
         for (const type of ALL_WALLET_TYPES) {
-          // The backend lowercases the enum member for the key.
-          const entry = data[type.toLowerCase()];
+          // The backend lowercases the enum member for the key, and the BFF
+          // sponsorizes it on the way out — so REFERRAL arrives as `sponsor`.
+          const wireKey = type === "REFERRAL" ? "sponsor" : type.toLowerCase();
+          const entry = data[wireKey];
           if (entry && typeof entry === "object") {
             wallets[type] = entry as WalletSummaryEntry;
           }
