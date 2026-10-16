@@ -13,7 +13,11 @@ export const metadata: Metadata = {
 // useSearchParams(), which Next cannot prerender without a boundary.
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<AuthFormSkeleton fields={2} />}>
+    <Suspense
+      fallback={
+        <AuthFormSkeleton rows={["field", "otp", "strength", "strength"]} />
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   );

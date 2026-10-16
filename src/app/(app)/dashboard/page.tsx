@@ -1,42 +1,107 @@
 "use client";
 
-import { Check, Copy, Network, Wallet } from "lucide-react";
+import type { ReactNode } from "react";
+import Link from "next/link";
+import {
+  ArrowDownToLine,
+  ArrowRight,
+  ArrowUpFromLine,
+  BadgeCheck,
+  Clock3,
+  Network,
+  TriangleAlert,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 
-import { BrandMark } from "@/components/layout/brand";
-import { useState } from "react";
-import { toast } from "sonner";
-
+import { cn } from "@/lib/utils";
+import { CopyButton, CopyableHex } from "@/components/common/copy-button";
+import { EmptyState } from "@/components/common/empty-state";
+import { ErrorState } from "@/components/common/error-state";
+import { Money } from "@/components/common/money";
+import { PageHeader, SectionHeader } from "@/components/common/page-header";
+import { ShareSponsorButton } from "@/components/common/share-sponsor-button";
+import { RankBadge, StatusBadge } from "@/components/common/status-badge";
+import { TradePlanProgress } from "@/components/common/trade-plan-progress";
+import {
+  DashboardSlider,
+  NewsTicker,
+} from "@/components/common/dashboard-slider";
+import { SessionCodeCard } from "@/features/trading/components/session-code-card";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-
-import { ErrorState } from "@/components/common/error-state";
-import { Money } from "@/components/common/money";
-import { PageHeader } from "@/components/common/page-header";
-import { ShareReferralButton } from "@/components/common/share-referral-button";
-import { SponsorTradeBonus } from "@/components/common/sponsor-trade-bonus";
-import { StatCard } from "@/components/common/stat-card";
-import { TradePlanProgress } from "@/components/common/trade-plan-progress";
-import { DashboardSlider, NewsTicker } from "@/components/common/dashboard-slider";
-import { SessionCodeCard } from "@/features/trading/components/session-code-card";
-import LiveTradingChart from "@/components/home/live-trading-chart";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import { useDepositWalletAddressQuery } from "@/features/deposits/api/deposits-api";
 import { useUserDashboardQuery } from "@/features/users/api/users-api";
 import { useWalletSummaryQuery } from "@/features/wallet/api/wallet-api";
+import {
+  useTradeStatisticsQuery,
+  useTradesQuery,
+} from "@/features/portal/api/portal-api";
+
+import { WalletDistribution } from "@/features/wallet/components/wallet-distribution";
 
 import { normalizeError } from "@/lib/api/errors";
+import { formatDate, formatDateTime } from "@/lib/utils/format";
 import { ROUTES } from "@/config/routes";
-import shortenString from "@/lib/shortenString";
+import { USER_WALLET_TYPES } from "@/types/enums";
 
 import { useAppSelector } from "@/store/hooks";
 import { selectCurrentUser } from "@/store/slices/auth-slice";
+
+/**
+ * Dashboard.
+ *
+ * Built as an operations console, not a stack of promotional cards:
+ *
+ *   1. Header      — title, verification state, the two money-moving actions.
+ *   2. Balance     — one authoritative figure, then the per-wallet split that
+ *                    explains it, each with lifetime credit/debit underneath.
+ *   3. Performance — net P&L, volume and trade counts, with trade-plan progress
+ *                    attached because that plan is the only reason those numbers
+ *                    matter (it gates the Principal withdrawal penalty).
+ *   4. Recent      — the latest sessions with their status, so the screen
+ *                    answers "what just happened" without a navigation hop.
+ *   5. Rail        — sponsor link, deposit address, account facts.
+ *
+ * Structure over spectacle: every tile is a hairline-separated cell of a single
+ * grid rather than a floating rounded card, money is tabular, and each figure
+ * links to the page that owns it. A grid of identical icon-and-number cards is
+ * the shape of a template, not of a product.
+ *
+ * Deliberately absent: the marketing `LiveTradingChart` the previous build
+ * embedded here. It renders a `Math.random()` walk labelled BTC/USDT — mock
+ * data inside an authenticated surface is the fastest way to make a real
+ * product read as a demo.
+ */
+
+/**
+ * Trade statistics arrive as JS numbers (the backend does `Number(Decimal)`);
+ * `Money` wants a decimal string. `toFixed` rather than `String` so a small or
+ * very large figure never renders in exponential notation.
+ */
+const decimal = (value: number | undefined) =>
+  value === undefined ? null : value.toFixed(2);
+
+/** `SUSPENDED` → `Suspended`. Enum values are not display copy. */
+const humanise = (value: string | null) =>
+  value ? value.charAt(0) + value.slice(1).toLowerCase() : "Pending";
 
 export default function DashboardPage() {
   const user = useAppSelector(selectCurrentUser);
@@ -44,202 +109,543 @@ export default function DashboardPage() {
   const dashboard = useUserDashboardQuery();
   const wallet = useWalletSummaryQuery();
   const depositWallet = useDepositWalletAddressQuery();
+  const stats = useTradeStatisticsQuery();
+  const trades = useTradesQuery({ limit: 6 });
 
-  const loading = dashboard.isLoading || wallet.isLoading || depositWallet.isLoading;
+  const profile = dashboard.data?.profile;
+  const loading = dashboard.isLoading || wallet.isLoading;
 
   const error = normalizeError(
-    dashboard.error ?? wallet.error ?? depositWallet.error
+    dashboard.error ?? wallet.error ?? depositWallet.error,
   );
 
-  const referralLink =
-    typeof window !== "undefined"
-      ? `${window.location.origin}${ROUTES.referralLanding(dashboard.data?.profile?.referralCode ?? user?.referralCode ?? "")}`
+  const status = profile?.status ?? user?.status ?? null;
+  const verified = status === "ACTIVE";
+
+  const sponsorCode = profile?.sponsorCode ?? user?.sponsorCode ?? "";
+  const sponsorLink =
+    typeof window !== "undefined" && sponsorCode
+      ? `${window.location.origin}${ROUTES.sponsorLanding(sponsorCode)}`
       : "";
 
   const depositAddress = depositWallet.data?.address ?? null;
 
-  const [copiedRef, setCopiedRef] = useState(false);
-  const [copiedAddr, setCopiedAddr] = useState(false);
-
-  const copyReferral = async () => {
-    if (!referralLink) return;
-    try {
-      await navigator.clipboard.writeText(referralLink);
-      setCopiedRef(true);
-      toast.success("Referral link copied!");
-      setTimeout(() => setCopiedRef(false), 1500);
-    } catch {
-      toast.error("Could not copy to clipboard.");
-    }
-  };
-
-  const copyAddress = async () => {
-    if (!depositAddress) return;
-    try {
-      await navigator.clipboard.writeText(depositAddress);
-      setCopiedAddr(true);
-      toast.success("Deposit address copied!");
-      setTimeout(() => setCopiedAddr(false), 1500);
-    } catch {
-      toast.error("Could not copy to clipboard.");
-    }
-  };
-
   return (
-    <>
-      {error && <ErrorState error={error} />}
+    <div className="space-y-5">
+      <PageHeader
+        title="Dashboard"
+        description="Balances, trading performance, and account status."
+        breadcrumbs={[
+          { label: "Account", href: ROUTES.profile },
+          { label: "Dashboard" },
+        ]}
+        badge={<VerificationPill verified={verified} status={status} />}
+        className="mb-0"
+        actions={
+          <>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={ROUTES.withdraw}>
+                <ArrowUpFromLine />
+                Withdraw
+              </Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href={ROUTES.deposit}>
+                <ArrowDownToLine />
+                Deposit
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
-      {/* 1. User name + total balance */}
-      <Card className="mb-6">
-        <CardContent className="flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
-          <div className="w-full sm:w-auto">
-            <h2 className="text-2xl font-bold tracking-tight">
-              {user?.name ? `Hello, ${user.name}` : "Welcome"}
-            </h2>
-            <p className="text-muted-foreground mt-1">
-              Here is your account overview.
+      {error && <ErrorState error={error} onRetry={dashboard.refetch} />}
+
+      <NewsTicker />
+
+      {/* ---- Announcements -------------------------------------------------- */}
+      <section>
+        <SectionHeader title="Announcements" />
+        <DashboardSlider />
+      </section>
+      
+
+      <SessionCodeCard compact />
+
+      {/* ---- Balance -------------------------------------------------------- */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-muted-foreground font-sans text-xs font-medium tracking-widest uppercase">
+            Total balance
+          </CardTitle>
+          <CardAction>
+            <Button variant="ghost" size="xs" asChild>
+              <Link href={ROUTES.wallet}>
+                Wallets
+                <ArrowRight />
+              </Link>
+            </Button>
+          </CardAction>
+        </CardHeader>
+
+        <CardContent className="space-y-5">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+            <Money
+              value={wallet.data?.totalBalance}
+              showCurrency
+              size="2xl"
+              className="text-3xl leading-none sm:text-4xl"
+            />
+            <p className="text-muted-foreground text-xs">
+              {loading
+                ? "Syncing balances…"
+                : `Across ${USER_WALLET_TYPES.length} wallets`}
             </p>
           </div>
-          <div className="flex w-full flex-col items-center gap-1 sm:w-auto">
-            <div className="inline-flex items-center gap-2">
-              <BrandMark className="size-8" />
-              <span className="text-sm font-semibold tracking-tight text-foreground">
-                2X100 Global
-              </span>
-            </div>
-            <span
-              className={`inline-flex items-center gap-1 text-sm font-medium ${
-                user?.status === "ACTIVE" ? "text-profit" : "text-loss"
-              }`}
-            >
-              <Check className="size-4" />
-              User verified: {user?.status === "ACTIVE" ? "true" : "false"}
-            </span>
-          </div>
-          <div className="w-full text-left sm:w-auto sm:text-right">
-            <p className="text-muted-foreground text-sm">Total balance</p>
-            {wallet.isLoading ? (
-              <span className="text-muted-foreground">Loading…</span>
-            ) : (
-              <Money
-                value={wallet.data?.totalBalance}
-                showCurrency
-                size="xl"
-                className="font-bold"
-              />
-            )}
-          </div>
+
+          <WalletDistribution summary={wallet.data} loading={loading} />
         </CardContent>
       </Card>
 
-      {/* 2. Posts slider at the top — first thing members see */}
-      <DashboardSlider />
+      {/* ---- Performance + recent ------------------------------------------ */}
+      <div className="grid gap-5 xl:grid-cols-12">
+        <div className="space-y-5 xl:col-span-5">
+          <Card>
+            <CardHeader>
+              <CardTitle>Trading performance</CardTitle>
+              <CardDescription>Lifetime, across every session.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid gap-px overflow-hidden rounded-lg border border-border/60 bg-border/40 sm:grid-cols-3">
+                {/* Hero: the headline number the rest of the panel explains. */}
+                <div className="bg-card flex flex-col gap-1.5 p-4 sm:col-span-3">
+                  <span className="text-muted-foreground text-xs font-medium">
+                    Net profit
+                  </span>
+                  {stats.isLoading ? (
+                    <Skeleton className="h-9 w-40" />
+                  ) : (
+                    <Money
+                      value={decimal(stats.data?.totalUserProfit)}
+                      showCurrency
+                      variant="signed"
+                      size="xl"
+                      className="text-2xl leading-none sm:text-3xl"
+                    />
+                  )}
+                </div>
 
-      {/* 3. Live trade session code (visible only while a window is open) */}
-      <SessionCodeCard compact />
+                <Tile
+                  label="Volume"
+                  loading={stats.isLoading}
+                  value={
+                    <Money
+                      value={decimal(stats.data?.totalVolume)}
+                      showCurrency
+                      compact
+                    />
+                  }
+                />
+                <Tile
+                  label="Trades"
+                  loading={stats.isLoading}
+                  value={`${stats.data?.completedTrades ?? 0} / ${stats.data?.totalTrades ?? 0}`}
+                  hint={
+                    stats.data?.pendingTrades
+                      ? `${stats.data.pendingTrades} open`
+                      : undefined
+                  }
+                />
+                <Tile
+                  label="Commission"
+                  loading={stats.isLoading}
+                  value={
+                    <Money
+                      value={decimal(stats.data?.totalAdminCommission)}
+                      showCurrency
+                      compact
+                    />
+                  }
+                />
+              </div>
 
-      {/* 4. News section */}
-      <section className="mb-6">
-        <NewsTicker />
-      </section>
+              {/* The plan gates the Principal penalty — read as a footer of the
+                  same panel, not a competing strip beside it. */}
+              <div className="border-border/60 border-t pt-5">
+                <TradePlanProgress variant="inline" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* 2b. Live trading chart from home page */}
-      <LiveTradingChart minimal />
-
-      {/* 3. Referral + deposit address */}
-      <div className="mb-6 grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="xl:col-span-7">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Network className="size-5 text-(--logo-gold-300)" />
-              Your Referral Link
-            </CardTitle>
-            <CardDescription>
-              Share this link to invite new members. They land on signup with
-              your code pre-filled.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Input
-              value={referralLink}
-              readOnly
-              aria-label="Referral link"
-              className="font-mono text-sm"
-            />
-            <div className="flex gap-2">
-              <Button
-                onClick={copyReferral}
-                variant={copiedRef ? "secondary" : "default"}
-                className="shrink-0"
-              >
-                {copiedRef ? (
-                  <>
-                    <Check className="mr-2 size-4" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="mr-2 size-4" />
-                    Copy
-                  </>
-                )}
+            <CardTitle>Recent trades</CardTitle>
+            <CardAction>
+              <Button variant="ghost" size="xs" asChild>
+                <Link href={ROUTES.tradingHistory}>
+                  View all
+                  <ArrowRight />
+                </Link>
               </Button>
-              <ShareReferralButton referralLink={referralLink} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wallet className="size-5 text-(--logo-gold-300)" />
-              Deposit Wallet Address
-            </CardTitle>
-            <CardDescription>
-              Send USDT to this platform address, then submit the transaction in
-              the deposit form.
-            </CardDescription>
+            </CardAction>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Input
-              value={
-                depositAddress
-                  ? shortenString(depositAddress, 10, 8)
-                  : depositWallet.isLoading
-                    ? "Loading address…"
-                    : "Not configured yet"
-              }
-              readOnly
-              aria-label="Deposit wallet address"
-              className="font-mono text-sm"
-            />
-            <Button
-              onClick={copyAddress}
-              disabled={!depositAddress}
-              variant={copiedAddr ? "secondary" : "default"}
-              className="shrink-0"
-            >
-              {copiedAddr ? (
-                <>
-                  <Check className="mr-2 size-4" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="mr-2 size-4" />
-                  Copy
-                </>
-              )}
-            </Button>
+          <CardContent>
+            {trades.isLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <Skeleton key={index} className="h-8 w-full" />
+                ))}
+              </div>
+            ) : trades.data?.items.length ? (
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-muted-foreground text-[0.6875rem] tracking-widest uppercase">
+                      Session
+                    </TableHead>
+                    <TableHead className="text-muted-foreground text-[0.6875rem] tracking-widest uppercase">
+                      Amount
+                    </TableHead>
+                    <TableHead className="text-muted-foreground text-right text-[0.6875rem] tracking-widest uppercase">
+                      P&amp;L
+                    </TableHead>
+                    <TableHead className="text-muted-foreground text-[0.6875rem] tracking-widest uppercase">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-muted-foreground text-right text-[0.6875rem] tracking-widest uppercase">
+                      Exit
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {trades.data.items.map((trade) => (
+                    <TableRow key={trade.id}>
+                      <TableCell className="text-xs font-medium whitespace-nowrap">
+                        {trade.tradeType === "MORNING" ? "Morning" : "Evening"}
+                      </TableCell>
+                      <TableCell>
+                        <Money value={trade.tradeAmount} size="sm" />
+                      </TableCell>
+                      <TableCell>
+                        <span className="flex items-center justify-end gap-2">
+                          <Money
+                            value={trade.profit}
+                            size="sm"
+                            variant="signed"
+                          />
+                          {trade.profitPercentage !== null && (
+                            <span
+                              className={cn(
+                                "w-12 text-right text-xs",
+                                trade.profitPercentage >= 0
+                                  ? "text-profit"
+                                  : "text-loss",
+                              )}
+                            >
+                              {trade.profitPercentage >= 0 ? "+" : ""}
+                              {trade.profitPercentage.toFixed(2)}%
+                            </span>
+                          )}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={trade.status} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
+                        {trade.exitTime ? formatDateTime(trade.exitTime) : "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <EmptyState
+                title="No trades yet"
+                description="Sessions run twice a day. Your results appear here as soon as one settles."
+                action={{ label: "Open trading", href: ROUTES.trading }}
+                className="px-0 py-10"
+              />
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* 4. Trade plan progress */}
-      <section className="mb-4 relative overflow-hidden">
-        <TradePlanProgress />
-      </section>
+      {/* ---- Rail ----------------------------------------------------------- */}
+      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Network className="text-primary size-4" />
+              Sponsor
+            </CardTitle>
+            <CardDescription>
+              Anyone who signs up with your code joins your team.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <CopyField
+              label="Sponsor link"
+              value={sponsorLink}
+              fallback={dashboard.isLoading ? "Building link…" : "Unavailable"}
+            />
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-muted-foreground text-xs">
+                Code{" "}
+                <span className="text-foreground font-mono">
+                  {sponsorCode || "—"}
+                </span>
+              </p>
+              <ShareSponsorButton sponsorLink={sponsorLink} />
+            </div>
+            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border/60 bg-border/40">
+              <Tile
+                label="Direct"
+                value={(dashboard.data?.directSponsors ?? 0).toLocaleString()}
+                skeletonWidth="w-10"
+                loading={dashboard.isLoading}
+              />
+              <Tile
+                label="Team size"
+                value={(dashboard.data?.teamSize ?? 0).toLocaleString()}
+                skeletonWidth="w-10"
+                loading={dashboard.isLoading}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-    </>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wallet className="text-primary size-4" />
+              Deposit address
+            </CardTitle>
+            <CardDescription>
+              Send USDT here, then submit the transaction for verification.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <CopyField
+              label="USDT deposit address"
+              value={depositAddress}
+              fallback={
+                depositWallet.isLoading
+                  ? "Loading address…"
+                  : "Not configured yet"
+              }
+            />
+            <Button size="sm" className="w-full" asChild>
+              <Link href={ROUTES.deposit}>
+                <ArrowDownToLine />
+                Open deposit form
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2 xl:col-span-1">
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+            <CardDescription>Profile and eligibility facts.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <dl className="divide-border/60 divide-y">
+              <Fact label="Rank">
+                <RankBadge rank={profile?.rank} />
+              </Fact>
+              <Fact label="Sponsor code">
+                <span className="font-mono text-xs">
+                  {sponsorCode || "—"}
+                </span>
+              </Fact>
+              <Fact label="Payout address">
+                <CopyableHex
+                  value={profile?.walletAddress}
+                  display={
+                    profile?.walletAddress
+                      ? `${profile.walletAddress.slice(0, 8)}…${profile.walletAddress.slice(-6)}`
+                      : undefined
+                  }
+                />
+              </Fact>
+              <Fact label="Auto-trade">
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    profile?.autoTradeStatus ? "text-profit" : "text-muted-foreground",
+                  )}
+                >
+                  {profile?.autoTradeStatus ? "Enabled" : "Off"}
+                </span>
+              </Fact>
+              <Fact label="Member since">
+                <span className="text-xs">
+                  {formatDate(profile?.createdAt)}
+                </span>
+              </Fact>
+              <Fact label="Last login">
+                <span className="text-xs">
+                  {formatDateTime(profile?.lastLogin)}
+                </span>
+              </Fact>
+            </dl>
+
+            {/* Guarded on `profile` so the warning cannot flash before the
+                dashboard payload has actually resolved. */}
+            {profile && !profile.withdrawPasswordSet && (
+              <Notice tone="pending" icon={TriangleAlert}>
+                Set a withdrawal password before requesting a payout.
+              </Notice>
+            )}
+            {profile?.withdrawLockedUntil && (
+              <Notice tone="muted" icon={Clock3}>
+                Withdrawals unlock{" "}
+                {formatDateTime(profile.withdrawLockedUntil)}.
+              </Notice>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Local primitives                                                            */
+/* -------------------------------------------------------------------------- */
+
+function VerificationPill({
+  verified,
+  status,
+}: {
+  verified: boolean;
+  status: string | null;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+        verified
+          ? "border-profit/25 bg-profit/10 text-profit"
+          : "border-pending/25 bg-pending/10 text-pending",
+      )}
+    >
+      {verified ? (
+        <BadgeCheck className="size-3.5" />
+      ) : (
+        <Clock3 className="size-3.5" />
+      )}
+      {verified ? "Verified" : humanise(status)}
+    </span>
+  );
+}
+
+/** One cell of a hairline grid — the dashboard's basic unit. */
+function Tile({
+  label,
+  value,
+  hint,
+  loading,
+  skeletonWidth = "w-24",
+}: {
+  label: string;
+  value: ReactNode;
+  hint?: ReactNode;
+  loading?: boolean;
+  skeletonWidth?: string;
+}) {
+  return (
+    <div className="bg-card flex flex-col gap-1 p-3.5">
+      <span className="text-muted-foreground text-xs font-medium">{label}</span>
+      {loading ? (
+        <Skeleton className={cn("h-5", skeletonWidth)} />
+      ) : (
+        <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="text-lg leading-none font-semibold tabular">
+            {value}
+          </span>
+          {hint && (
+            <span className="text-muted-foreground text-xs">{hint}</span>
+          )}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2.5">
+      <dt className="text-muted-foreground text-sm">{label}</dt>
+      <dd className="flex min-w-0 items-center justify-end gap-1.5 text-right">
+        {children}
+      </dd>
+    </div>
+  );
+}
+
+function Notice({
+  tone,
+  icon: Icon,
+  children,
+}: {
+  tone: "pending" | "muted";
+  icon: LucideIcon;
+  children: ReactNode;
+}) {
+  return (
+    <p
+      className={cn(
+        "mt-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs",
+        tone === "pending"
+          ? "border-pending/25 bg-pending/10 text-pending"
+          : "border-border/60 bg-muted/40 text-muted-foreground",
+      )}
+    >
+      <Icon className="mt-px size-3.5 shrink-0" />
+      <span>{children}</span>
+    </p>
+  );
+}
+
+/**
+ * Read-only value with an inline copy affordance.
+ *
+ * Deliberately not an `<Input>`: this is a display surface, and a focusable
+ * field that cannot be edited misleads both keyboard and screen-reader users.
+ * The full value stays in the `title` so it can still be verified on hover.
+ */
+function CopyField({
+  label,
+  value,
+  fallback,
+}: {
+  label: string;
+  value: string | null;
+  fallback: string;
+}) {
+  if (!value) {
+    return (
+      <div className="space-y-1.5">
+        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className="text-muted-foreground/70 rounded-lg border border-dashed border-border/70 px-3 py-2 font-mono text-xs">
+          {fallback}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-muted-foreground text-xs">{label}</p>
+      <div className="bg-muted/40 flex items-center gap-1 rounded-lg border border-border/60 py-1 pr-1 pl-3">
+        <span className="min-w-0 flex-1 truncate font-mono text-xs" title={value}>
+          {value}
+        </span>
+        <CopyButton value={value} label={`Copy ${label.toLowerCase()}`} />
+      </div>
+    </div>
   );
 }

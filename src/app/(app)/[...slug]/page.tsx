@@ -38,7 +38,7 @@ import {
 } from "@/components/common/data-table";
 import { Money } from "@/components/common/money";
 import { PageHeader } from "@/components/common/page-header";
-import { ShareReferralButton } from "@/components/common/share-referral-button";
+import { ShareSponsorButton } from "@/components/common/share-sponsor-button";
 import { StatCard } from "@/components/common/stat-card";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { TradePlanProgress } from "@/components/common/trade-plan-progress";
@@ -57,6 +57,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { normalizeError } from "@/lib/api/errors";
+import { ledgerLabel, walletLabel } from "@/lib/utils/format";
 import {
   useChangePasswordMutation,
   useProfileQuery,
@@ -70,14 +71,14 @@ import { useLedgersQuery } from "@/features/ledger/api/ledger-api";
 import {
   useCurrentRankQuery,
   useCycleBonusesQuery,
-  useDirectReferralsQuery,
+  useDirectSponsorsQuery,
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
   useNotificationsQuery,
   useRecentTradesQuery,
-  useReferralBonusesQuery,
-  useReferralStatisticsQuery,
-  useReferralTreeQuery,
+  useSponsorBonusesQuery,
+  useSponsorStatisticsQuery,
+  useSponsorTreeQuery,
   useTradeStatisticsQuery,
   useTradesQuery,
 } from "@/features/portal/api/portal-api";
@@ -126,8 +127,8 @@ import type {
   RankRequirement,
   RankStats,
   RecentTrade,
-  Referral,
-  ReferralBonus,
+  Sponsor,
+  SponsorBonus,
   Ticket,
   TicketMessage,
   Trade,
@@ -178,13 +179,13 @@ export default function UserPortalPage({
   if (route === "transactions") return <TransactionsPage />;
   if (route === "trading") return <TradingPage />;
   if (route === "trading/history") return <TradeHistoryPage />;
-  if (route === "referral") return <ReferralPage />;
-  if (route === "referral/tree") return <ReferralTreePage />;
-  if (route === "referral/earnings") return <ReferralEarningsPage />;
+  if (route === "sponsor") return <SponsorPage />;
+  if (route === "sponsor/tree") return <SponsorTreePage />;
+  if (route === "sponsor/earnings") return <SponsorEarningsPage />;
   if (route === "ranks") return <RanksPage />;
   if (route === "rewards/cycle-bonus") return <CycleBonusPage />;
-  if (route === "rewards/pool-bonus") return <PoolBonusPage />;
-  if (route === "rewards/deposit-bonus") return <DepositBonusPage />;
+  if (route === "rewards/salary-bonus") return <PoolBonusPage />;
+  if (route === "rewards/welcome-bonus") return <DepositBonusPage />;
   if (route === "notifications") return <NotificationsPage />;
   if (route === "settings") return <SettingsPage />;
   if (route === "tickets") return <SupportTicketsPage />;
@@ -222,7 +223,7 @@ function WalletPage() {
         {entries.map(([type, wallet], i) => (
           <StatCard
             key={type}
-            label={title(type)}
+            label={walletLabel(type)}
             value={<Money value={wallet?.balance} showCurrency />}
             hint={
               <>
@@ -499,7 +500,7 @@ function DepositPage() {
 
 const withdrawalColumns: DataTableColumn<Withdrawal>[] = [
   { id: "date", header: "Date", cell: (r) => date(r.createdAt), nowrap: true },
-  { id: "wallet", header: "Wallet", cell: (r) => title(r.walletType) },
+  { id: "wallet", header: "Wallet", cell: (r) => walletLabel(r.walletType) },
   {
     id: "amount",
     header: "Amount",
@@ -536,7 +537,7 @@ const withdrawalColumns: DataTableColumn<Withdrawal>[] = [
 function WithdrawalMobile({ row }: { row: Withdrawal }) {
   return (
     <MobileCard>
-      <Row label="Wallet">{title(row.walletType)}</Row>
+      <Row label="Wallet">{walletLabel(row.walletType)}</Row>
       <Row label="Amount">
         <Money value={row.amount} showCurrency />
       </Row>
@@ -706,7 +707,7 @@ function TransactionsPage() {
   const q = useLedgersQuery(pageArgs(page));
   const columns: DataTableColumn<Ledger>[] = [
     { id: "date", header: "Date", cell: (r) => date(r.createdAt) },
-    { id: "type", header: "Type", cell: (r) => title(r.type) },
+    { id: "type", header: "Type", cell: (r) => ledgerLabel(r.type) },
     {
       id: "description",
       header: "Description",
@@ -744,7 +745,7 @@ function TransactionsPage() {
         getRowId={(r) => r.id}
         renderMobileCard={(r) => (
           <MobileCard>
-            <Row label="Type">{title(r.type)}</Row>
+            <Row label="Type">{ledgerLabel(r.type)}</Row>
             {r.description && <Row label="Remark">{r.description}</Row>}
             <Row label="Credit">
               <Money value={r.credit} />
@@ -913,7 +914,9 @@ function TradingPage() {
           <LiveTradingChart showHeading={false} />
         </CardContent>
       </Card>
-      <SessionCodeCard />
+      <div className="mb-6">
+        <SessionCodeCard />
+      </div>
       <div className="mb-6">
         <TradePlanProgress />
       </div>
@@ -1010,16 +1013,16 @@ function TradeHistoryPage() {
   );
 }
 
-function ReferralPage() {
+function SponsorPage() {
   const { data: profile } = useProfileQuery();
-  const stats = useReferralStatisticsQuery();
-  const refs = useDirectReferralsQuery();
+  const stats = useSponsorStatisticsQuery();
+  const refs = useDirectSponsorsQuery();
   const [copiedRef, setCopiedRef] = useState(false);
-  const referralLink =
+  const sponsorLink =
     typeof window !== "undefined"
-      ? `${window.location.origin}${ROUTES.referralLanding(profile?.referralCode ?? "")}`
+      ? `${window.location.origin}${ROUTES.sponsorLanding(profile?.sponsorCode ?? "")}`
       : "";
-  const columns: DataTableColumn<Referral>[] = [
+  const columns: DataTableColumn<Sponsor>[] = [
     {
       id: "member",
       header: "Member",
@@ -1034,11 +1037,11 @@ function ReferralPage() {
     },
   ];
   async function copy() {
-    if (!referralLink) return;
+    if (!sponsorLink) return;
     try {
-      await navigator.clipboard.writeText(referralLink);
+      await navigator.clipboard.writeText(sponsorLink);
       setCopiedRef(true);
-      toast.success("Referral link copied!");
+      toast.success("Sponsor link copied!");
       setTimeout(() => setCopiedRef(false), 1500);
     } catch {
       toast.error("Could not copy to clipboard.");
@@ -1047,19 +1050,19 @@ function ReferralPage() {
   return (
     <>
       <PageHeader
-        title="Referrals"
+        title="Sponsors"
         description="Share your link and track your direct network."
       />
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Your referral link</CardTitle>
+          <CardTitle>Your sponsor link</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2">
-          <Input value={referralLink} readOnly aria-label="Referral link" />
+          <Input value={sponsorLink} readOnly aria-label="Sponsor link" />
           <div className="flex gap-2">
             <Button
               onClick={copy}
-              disabled={!referralLink}
+              disabled={!sponsorLink}
               variant={copiedRef ? "secondary" : "default"}
             >
               {copiedRef ? (
@@ -1074,23 +1077,23 @@ function ReferralPage() {
                 </>
               )}
             </Button>
-            <ShareReferralButton
-              referralLink={referralLink}
-              disabled={!referralLink}
+            <ShareSponsorButton
+              sponsorLink={sponsorLink}
+              disabled={!sponsorLink}
             />
           </div>
         </CardContent>
       </Card>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Total referrals"
-          value={stats.data?.totalReferrals ?? 0}
+          label="Total sponsors"
+          value={stats.data?.totalSponsors ?? 0}
           icon={Users}
           loading={stats.isLoading}
         />
         <StatCard
-          label="Direct referrals"
-          value={stats.data?.directReferrals ?? 0}
+          label="Direct sponsors"
+          value={stats.data?.directSponsors ?? 0}
           loading={stats.isLoading}
         />
         <StatCard
@@ -1128,12 +1131,12 @@ function ReferralPage() {
   );
 }
 
-function ReferralTreePage() {
-  const q = useReferralTreeQuery(5);
+function SponsorTreePage() {
+  const q = useSponsorTreeQuery(5);
   return (
     <>
       <PageHeader
-        title="Referral Tree"
+        title="Sponsor Tree"
         description="Your network structure through five levels."
       />
       {q.isLoading ? (
@@ -1156,7 +1159,7 @@ function ReferralTreePage() {
   );
 }
 
-const bonusColumns: DataTableColumn<ReferralBonus>[] = [
+const bonusColumns: DataTableColumn<SponsorBonus>[] = [
   { id: "date", header: "Date", cell: (r) => date(r.createdAt) },
   { id: "level", header: "Level", cell: (r) => r.level },
   {
@@ -1176,13 +1179,13 @@ const bonusColumns: DataTableColumn<ReferralBonus>[] = [
     cell: (r) => <StatusBadge status={r.status} />,
   },
 ];
-function ReferralEarningsPage() {
+function SponsorEarningsPage() {
   const [page, setPage] = useState(1);
-  const q = useReferralBonusesQuery(pageArgs(page));
+  const q = useSponsorBonusesQuery(pageArgs(page));
   return (
     <>
       <PageHeader
-        title="Referral Earnings"
+        title="Sponsor Earnings"
         description="Bonuses generated by qualifying network deposits."
       />
       <DataTable
@@ -1306,8 +1309,8 @@ function RanksPage() {
           loading={q.isLoading}
         />
         <StatCard
-          label="Direct referrals"
-          value={stats?.directReferrals ?? q.data?.rankDetails?.directReferrals ?? 0}
+          label="Direct sponsors"
+          value={q.data?.rankDetails?.directSponsors ?? 0}
           loading={q.isLoading}
         />
         <StatCard
@@ -1507,7 +1510,7 @@ function PoolBonusPage() {
       destinationAddress: walletAddress,
       withdrawPassword,
     }).unwrap();
-    toast.success("Pool bonus request submitted. Pending admin approval.");
+    toast.success("Salary bonus request submitted. Pending admin approval.");
     setAmount("");
     setWalletAddress("");
   }
@@ -1575,14 +1578,14 @@ function PoolBonusPage() {
   return (
     <>
       <PageHeader
-        title="Pool Bonus"
-        description="Request to withdraw your pool bonus. Admin approval required."
+        title="Salary Bonus"
+        description="Request to withdraw your salary bonus. Admin approval required."
       />
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>New pool bonus request</CardTitle>
+          <CardTitle>New salary bonus request</CardTitle>
           <CardDescription>
-            Submit a request to withdraw your pool bonus. An admin will review
+            Submit a request to withdraw your salary bonus. An admin will review
             and approve, reject, or update the amount.
           </CardDescription>
         </CardHeader>
@@ -1632,7 +1635,7 @@ function PoolBonusPage() {
         onOpenChange={setPasswordDialogOpen}
         onConfirm={confirmRequest}
         loading={createMutation.isLoading}
-        title="Confirm pool bonus withdrawal"
+        title="Confirm salary bonus withdrawal"
       />
       <PageHeader title="Request history" />
       <DataTable
@@ -1694,7 +1697,7 @@ function DepositBonusPage() {
   return (
     <>
       <PageHeader
-        title="Deposit Bonus"
+        title="Welcome Bonus"
         description="Actual bonuses recorded on your deposit history."
       />
       <div className="mb-6">
@@ -1716,7 +1719,7 @@ function DepositBonusPage() {
         getRowId={(r) => r.id}
         renderMobileCard={(r) => <DepositMobile row={r} />}
         onPageChange={setPage}
-        emptyState={{ title: "No deposit bonuses on this page" }}
+        emptyState={{ title: "No welcome bonuses on this page" }}
       />
     </>
   );

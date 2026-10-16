@@ -128,23 +128,23 @@ export const USER_NAV: NavSection[] = [
     label: "Network",
     items: [
       {
-        label: "Referrals",
-        href: ROUTES.referral,
+        label: "Sponsors",
+        href: ROUTES.sponsor,
         icon: Users,
         exact: true,
-        keywords: ["invite", "affiliate", "downline", "sponsor"],
+        keywords: ["invite", "affiliate", "downline", "referral"],
       },
       {
-        label: "Referral Tree",
-        href: ROUTES.referralTree,
+        label: "Sponsor Tree",
+        href: ROUTES.sponsorTree,
         icon: Network,
         keywords: ["genealogy", "team", "structure", "levels"],
       },
       {
         label: "Earnings",
-        href: ROUTES.referralEarnings,
+        href: ROUTES.sponsorEarnings,
         icon: Coins,
-        keywords: ["commission", "bonus", "referral income"],
+        keywords: ["commission", "bonus", "sponsor income"],
       },
     ],
   },
@@ -164,13 +164,13 @@ export const USER_NAV: NavSection[] = [
       //   keywords: ["10 day", "cycle", "reward"],
       // },
       {
-        label: "Pool Bonus",
+        label: "Salary Bonus",
         href: ROUTES.poolBonus,
         icon: Coins,
         keywords: ["pool", "bonus", "admin approval", "request"],
       },
       {
-        label: "Deposit Bonus",
+        label: "Welcome Bonus",
         href: ROUTES.depositBonus,
         icon: Gift,
         keywords: ["5%", "bonus", "incentive"],
@@ -278,8 +278,8 @@ export const ADMIN_NAV: NavSection[] = [
     label: "Reports",
     items: [
       {
-        label: "Referrals",
-        href: ROUTES.admin.referralReports,
+        label: "Sponsors",
+        href: ROUTES.admin.sponsorReports,
         icon: Network,
         keywords: ["bonuses", "network", "downline"],
       },
@@ -296,7 +296,7 @@ export const ADMIN_NAV: NavSection[] = [
       //   keywords: ["10 day", "payouts"],
       // },
       {
-        label: "Pool Bonus Requests",
+        label: "Salary Bonus Requests",
         href: ROUTES.admin.poolBonusRequests,
         icon: Coins,
         keywords: ["pool", "bonus", "approval", "requests"],
@@ -355,8 +355,8 @@ export const ADMIN_NAV: NavSection[] = [
 /**
  * Active-state resolution.
  *
- * Non-exact items match on a path-segment boundary, so `/referral` matches
- * `/referral/tree` but not a hypothetical `/referral-terms`. Comparing with a
+ * Non-exact items match on a path-segment boundary, so `/sponsor` matches
+ * `/sponsor/tree` but not a hypothetical `/sponsor-terms`. Comparing with a
  * bare `startsWith` is the usual bug here.
  */
 export function isNavItemActive(item: NavItem, pathname: string): boolean {

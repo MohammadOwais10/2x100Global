@@ -12,7 +12,7 @@ import type { DepositStatus } from "@/types/enums";
  * on-chain; the backend queues it for blockchain verification, then an admin
  * approves it. So `create` is not a money movement — nothing is credited until
  * approval — which is why it invalidates only the deposit list and stats,
- * while `approve` invalidates the full money set plus referral bonuses.
+ * while `approve` invalidates the full money set plus sponsor bonuses.
  */
 
 export interface CreateDepositRequest {
@@ -119,8 +119,8 @@ export const depositsApi = baseApi.injectEndpoints({
     ),
 
     /**
-     * Approving credits the principal wallet, pays the deposit bonus and
-     * cascades referral bonuses up the sponsor chain — which can promote a
+     * Approving credits the principal wallet, pays the welcome bonus and
+     * cascades sponsor bonuses up the sponsor chain — which can promote a
      * sponsor's rank. Hence the broad invalidation: anything less leaves a
      * sponsor looking at a stale balance immediately after an approval.
      */
@@ -132,8 +132,8 @@ export const depositsApi = baseApi.injectEndpoints({
         { type: "Deposit" as const, id },
         listTag("Deposit"),
         "DepositStats",
-        listTag("ReferralBonus"),
-        "ReferralStats",
+        listTag("SponsorBonus"),
+        "SponsorStats",
         listTag("Rank"),
         listTag("Notification"),
         "NotificationCount",

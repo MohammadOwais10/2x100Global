@@ -8,11 +8,11 @@ import type {
   CurrentRank,
   CycleBonus,
   RecentTrade,
-  Referral,
-  ReferralBonus,
-  ReferralStatistics,
-  ReferralTreeNode,
   Setting,
+  Sponsor,
+  SponsorBonus,
+  SponsorStatistics,
+  SponsorTreeNode,
   SubmitTradeCodeResult,
   Trade,
   TradeStatistics,
@@ -28,7 +28,7 @@ export interface TradeParams {
   endDate?: string;
 }
 
-export interface ReferralBonusParams {
+export interface SponsorBonusParams {
   page?: number;
   limit?: number;
   level?: number;
@@ -81,31 +81,31 @@ export const portalApi = baseApi.injectEndpoints({
         ...MONEY_MOVEMENT_TAGS,
       ],
     }),
-    directReferrals: builder.query<Paginated<Referral>, void>({
+    directSponsors: builder.query<Paginated<Sponsor>, void>({
       query: () => bff("/referrals/referrals"),
-      transformResponse: (response: unknown) => fromBareArray<Referral>(response),
-      providesTags: (result) => listTags("Referral", result?.items),
+      transformResponse: (response: unknown) => fromBareArray<Sponsor>(response),
+      providesTags: (result) => listTags("Sponsor", result?.items),
     }),
-    referralTree: builder.query<ReferralTreeNode, number | void>({
+    sponsorTree: builder.query<SponsorTreeNode, number | void>({
       query: (maxLevel) => ({ url: bff("/referrals/tree"), params: maxLevel ? { maxLevel } : undefined }),
-      transformResponse: (response: ApiSuccess<ReferralTreeNode>) => response.data,
-      providesTags: ["ReferralTree"],
+      transformResponse: (response: ApiSuccess<SponsorTreeNode>) => response.data,
+      providesTags: ["SponsorTree"],
     }),
-    referralBonuses: builder.query<Paginated<ReferralBonus>, ReferralBonusParams | void>({
+    sponsorBonuses: builder.query<Paginated<SponsorBonus>, SponsorBonusParams | void>({
       query: (params) => ({ url: bff("/referrals/bonuses"), params: buildQuery({ ...(params ?? {}) }) }),
-      transformResponse: (response: unknown) => fromMetaEnvelope<ReferralBonus>(response),
-      providesTags: (result) => listTags("ReferralBonus", result?.items),
+      transformResponse: (response: unknown) => fromMetaEnvelope<SponsorBonus>(response),
+      providesTags: (result) => listTags("SponsorBonus", result?.items),
     }),
-    referralStatistics: builder.query<ReferralStatistics, void>({
+    sponsorStatistics: builder.query<SponsorStatistics, void>({
       query: () => bff("/referrals/statistics"),
-      transformResponse: (response: ApiSuccess<ReferralStatistics>) => response.data,
-      providesTags: ["ReferralStats"],
+      transformResponse: (response: ApiSuccess<SponsorStatistics>) => response.data,
+      providesTags: ["SponsorStats"],
     }),
-    referralLink: builder.query<string, void>({
+    sponsorLink: builder.query<string, void>({
       query: () => bff("/referrals/link"),
-      transformResponse: (response: ApiSuccess<{ referralLink: string }>) =>
-        response.data.referralLink,
-      providesTags: ["Referral"],
+      transformResponse: (response: ApiSuccess<{ sponsorLink: string }>) =>
+        response.data.sponsorLink,
+      providesTags: ["Sponsor"],
     }),
     currentRank: builder.query<CurrentRank, void>({
       query: () => bff("/ranks/current"),
@@ -146,11 +146,11 @@ export const {
   useRecentTradesQuery,
   useActiveSessionQuery,
   useSubmitTradeCodeMutation,
-  useDirectReferralsQuery,
-  useReferralTreeQuery,
-  useReferralBonusesQuery,
-  useReferralStatisticsQuery,
-  useReferralLinkQuery,
+  useDirectSponsorsQuery,
+  useSponsorTreeQuery,
+  useSponsorBonusesQuery,
+  useSponsorStatisticsQuery,
+  useSponsorLinkQuery,
   useCurrentRankQuery,
   useCycleBonusesQuery,
   useNotificationsQuery,

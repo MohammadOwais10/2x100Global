@@ -8,7 +8,7 @@ import { UserRole } from "@/types/enums";
  *
  * This slice holds NO tokens — they live in httpOnly cookies the browser
  * cannot read. What it holds is the identity the UI needs in order to render:
- * display name, role, referral code, rank.
+ * display name, role, sponsor code, rank.
  *
  * It is hydrated on the server (the root layout reads the session cookie and
  * passes a preloaded state into the store), so the correct chrome renders on

@@ -76,11 +76,11 @@ const phone = z
  * Uppercased because generated codes use A-Z0-9 only, and users routinely type
  * them in lowercase off a screenshot.
  */
-const referralCode = z
+const sponsorCode = z
   .string()
   .trim()
   .toUpperCase()
-  .length(8, "Referral codes are 8 characters");
+  .length(8, "Sponsor codes are 8 characters");
 
 /* -------------------------------------------------------------------------- */
 /* Login                                                                       */
@@ -124,11 +124,7 @@ export const signupSchema = z
         z.literal(""),
       ])
       .optional(),
-    referralCode: z.union([referralCode, z.literal("")]).optional(),
-    /** Client-only. */
-    acceptTerms: z.literal(true, {
-      message: "You must accept the terms to continue",
-    }),
+    sponsorCode: z.union([sponsorCode, z.literal("")]).optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -147,7 +143,7 @@ export type SignupFormOutput = z.output<typeof signupSchema>;
  * optional govId upload). Empty optionals are omitted entirely rather than
  * sent as "" — the backend's optional fields reject empty strings.
  *
- * `confirmPassword` and `acceptTerms` are client-only and never sent.
+ * `confirmPassword` is client-only and never sent.
  */
 export function toSignupRequest(values: SignupFormOutput): FormData {
   const form = new FormData();
@@ -157,7 +153,9 @@ export function toSignupRequest(values: SignupFormOutput): FormData {
 
   if (values.phone) form.set("phone", values.phone);
   if (values.country) form.set("country", values.country);
-  if (values.referralCode) form.set("referralCode", values.referralCode);
+  // The backend's field is still called `referralCode`; only the UI/domain
+  // language changed to "sponsor".
+  if (values.sponsorCode) form.set("referralCode", values.sponsorCode);
 
   return form;
 }

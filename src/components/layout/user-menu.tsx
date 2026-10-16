@@ -2,17 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useCallback } from "react";
 import {
-  ChevronsUpDown,
-  Eye,
-  EyeOff,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Settings,
   ShieldCheck,
   UserCog,
+  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,40 +22,34 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { RankBadge } from "@/components/common/status-badge";
 import { useLogoutMutation } from "@/features/auth/api/auth-api";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
 import { selectCurrentUser, selectIsAdmin } from "@/store/slices/auth-slice";
-import {
-  balancesVisibilityToggled,
-  selectBalancesHidden,
-} from "@/store/slices/ui-slice";
 import { ROUTES } from "@/config/routes";
 import { initialsOf } from "@/lib/utils/format";
 import { UserRole } from "@/types/enums";
 
 /**
- * Account menu.
+ * Sign out, as a hook.
  *
- * Also hosts the privacy toggle and the admin/user context switch, because
- * both are account-scoped rather than page-scoped and users look for them
- * under their avatar.
+ * The sidebar button, the avatar menu and the ⌘K palette all need the same
+ * "call the mutation, redirect, refresh" sequence — one copy, because a second
+ * copy is a second chance to forget the redirect.
  */
-export function UserMenu({ collapsed = false }: { collapsed?: boolean }) {
-  const user = useAppSelector(selectCurrentUser);
-  const isAdmin = useAppSelector(selectIsAdmin);
-  const balancesHidden = useAppSelector(selectBalancesHidden);
-  const dispatch = useAppDispatch();
+export function useSignOut() {
   const router = useRouter();
-  const [logout, { isLoading: loggingOut }] = useLogoutMutation();
+  const [logout, { isLoading }] = useLogoutMutation();
 
-  if (!user) return null;
-
-  const handleLogout = async () => {
+  const signOut = useCallback(async () => {
     try {
       await logout().unwrap();
       toast.success("Signed out");
@@ -66,119 +61,204 @@ export function UserMenu({ collapsed = false }: { collapsed?: boolean }) {
       router.replace(ROUTES.login);
       router.refresh();
     }
-  };
+  }, [logout, router]);
+
+  return { signOut, isSigningOut: isLoading };
+}
+
+/**
+ * The rail's only account control.
+ *
+ * Sign out is the one account action you need without navigating anywhere, so
+ * it stays pinned to the sidebar. Everything else — profile, settings, privacy,
+ * the admin switch — moved to the avatar menu in the topbar, where there is
+ * room to read it.
+ */
+export function SignOutButton({
+  collapsed = false,
+  className,
+}: {
+  collapsed?: boolean;
+  className?: string;
+}) {
+  const { signOut, isSigningOut } = useSignOut();
+
+  const button = (
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={isSigningOut}
+      onClick={() => void signOut()}
+      aria-label="Sign out"
+      className={cn(
+        "text-muted-foreground hover:text-foreground w-full justify-start gap-3",
+        collapsed && "justify-center px-0",
+        className,
+      )}
+    >
+      <LogOut className="size-4.5 shrink-0" />
+      {!collapsed && (
+        <span className="text-sm">{isSigningOut ? "Signing out…" : "Sign out"}</span>
+      )}
+    </Button>
+  );
+
+  if (!collapsed) return button;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="right" sideOffset={8}>
+        Sign out
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+/**
+ * One row of the account menu: a tinted icon chip and the action.
+ *
+ * Single column on purpose. A label with a right-aligned hint needs a panel
+ * wide enough to hold both, and at that width the menu stops reading as a list
+ * of five things and starts reading as a form.
+ */
+function MenuRow({
+  icon: Icon,
+  label,
+  href,
+  destructive = false,
+  className,
+  ...props
+}: {
+  icon: LucideIcon;
+  label: string;
+  href?: string;
+  destructive?: boolean;
+} & Omit<React.ComponentProps<typeof DropdownMenuItem>, "asChild">) {
+  const content = (
+    <>
+      <span
+        className={cn(
+          "grid size-6 shrink-0 place-items-center rounded-md",
+          destructive ? "bg-destructive/10" : "bg-muted",
+        )}
+        aria-hidden="true"
+      >
+        <Icon className="size-3.5" />
+      </span>
+      <span className="truncate text-sm">{label}</span>
+    </>
+  );
+
+  return (
+    <DropdownMenuItem
+      asChild={Boolean(href)}
+      variant={destructive ? "destructive" : "default"}
+      className={cn(
+        "h-auto gap-2.5 rounded-md px-2 py-1.5",
+        "[&_svg:not([class*='size-'])]:size-4",
+        className,
+      )}
+      {...props}
+    >
+      {href ? <Link href={href}>{content}</Link> : content}
+    </DropdownMenuItem>
+  );
+}
+
+/**
+ * Account menu — the topbar's user icon.
+ *
+ * The trigger is an icon, not a name: the topbar is shared chrome, so identity
+ * belongs behind a click rather than spending 200px of every page on it.
+ *
+ * Opening it yields a slim identity line — who you are, at a glance — then a
+ * list of rows that each explain themselves.
+ */
+export function UserMenu({ className }: { className?: string }) {
+  const user = useAppSelector(selectCurrentUser);
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const { signOut, isSigningOut } = useSignOut();
+
+  if (!user) return null;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
+          size="icon"
+          aria-label="Account menu"
           className={cn(
-            "h-auto w-full justify-start gap-2.5 px-2 py-2",
-            collapsed && "justify-center px-0",
+            "bg-accent/50 text-accent-foreground hover:bg-accent size-9 rounded-lg",
+            "focus-visible:ring-ring/50 focus-visible:ring-2",
+            "data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
+            className,
           )}
         >
+          <UserRound className="size-5" />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" sideOffset={8} className="w-48 p-1.5">
+        <div className="flex items-center gap-2.5 px-2 py-2">
           <Avatar className="size-8 shrink-0">
-            <AvatarFallback className="bg-gradient-to-br from-(--logo-gold-400) to-(--logo-gold-700) text-[0.6875rem] font-semibold text-(--logo-navy-900)">
+            <AvatarFallback className="from-(--logo-gold-400) to-(--logo-gold-700) bg-gradient-to-br text-[0.6875rem] font-semibold text-(--logo-navy-900)">
               {initialsOf(user.name, user.email)}
             </AvatarFallback>
           </Avatar>
 
-          {!collapsed && (
-            <>
-              <div className="flex min-w-0 flex-1 flex-col items-start leading-tight">
-                <span className="text-foreground w-full truncate text-sm font-medium">
-                  {user.name ?? user.email.split("@")[0]}
-                </span>
-                <span className="text-muted-foreground w-full truncate text-xs">
-                  {user.email}
-                </span>
-              </div>
-              <ChevronsUpDown className="text-muted-foreground size-4 shrink-0" />
-            </>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" side="top" className="w-64">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col gap-1.5">
-            <span className="text-foreground truncate text-sm font-medium">
-              {user.name ?? "Account"}
-            </span>
+          <div className="flex min-w-0 flex-1 flex-col leading-tight">
+            <div className="flex items-center gap-1.5">
+              <span className="text-foreground truncate text-sm font-medium">
+                {user.name ?? user.email.split("@")[0]}
+              </span>
+              {user.role === UserRole.ADMIN && (
+                <ShieldCheck
+                  className="text-primary size-3.5 shrink-0"
+                  aria-label="Admin"
+                />
+              )}
+            </div>
             <span className="text-muted-foreground truncate text-xs">
               {user.email}
             </span>
-            <div className="mt-1 flex items-center gap-1.5">
-              <RankBadge rank={user.rank} />
-              {user.role === UserRole.ADMIN && (
-                <span className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.625rem] font-semibold">
-                  <ShieldCheck className="size-3" />
-                  Admin
-                </span>
-              )}
-            </div>
           </div>
-        </DropdownMenuLabel>
 
-        <DropdownMenuSeparator />
+          <RankBadge rank={user.rank} />
+        </div>
 
-        <DropdownMenuItem
-          onSelect={(event) => {
-            // Keep the menu open: toggling privacy is something users often do
-            // alongside another action, and closing feels abrupt.
-            event.preventDefault();
-            dispatch(balancesVisibilityToggled());
-          }}
-        >
-          {balancesHidden ? (
-            <Eye className="size-4" />
-          ) : (
-            <EyeOff className="size-4" />
-          )}
-          {balancesHidden ? "Show balances" : "Hide balances"}
-        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-border/60" />
 
-        <DropdownMenuSeparator />
+        <MenuRow href={ROUTES.profile} icon={UserCog} label="Profile" />
 
-        <DropdownMenuItem asChild>
-          <Link href={ROUTES.profile}>
-            <UserCog className="size-4" />
-            Profile
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={ROUTES.settings}>
-            <Settings className="size-4" />
-            Settings
-          </Link>
-        </DropdownMenuItem>
+        <MenuRow href={ROUTES.settings} icon={Settings} label="Settings" />
+
+        <MenuRow href={ROUTES.support} icon={LifeBuoy} label="Support" />
 
         {isAdmin && (
           <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href={ROUTES.admin.dashboard}>
-                <LayoutDashboard className="size-4" />
-                Admin panel
-              </Link>
-            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-border/60" />
+            <MenuRow
+              href={ROUTES.admin.dashboard}
+              icon={LayoutDashboard}
+              label="Admin panel"
+            />
           </>
         )}
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-border/60" />
 
-        <DropdownMenuItem
-          variant="destructive"
-          disabled={loggingOut}
+        <MenuRow
+          destructive
+          disabled={isSigningOut}
+          icon={LogOut}
+          label={isSigningOut ? "Signing out…" : "Sign out"}
           onSelect={(event) => {
             event.preventDefault();
-            void handleLogout();
+            void signOut();
           }}
-        >
-          <LogOut className="size-4" />
-          {loggingOut ? "Signing out…" : "Sign out"}
-        </DropdownMenuItem>
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -55,7 +55,7 @@ export interface AuthUser {
   email: string;
   name: string | null;
   role: UserRole;
-  referralCode: string;
+  sponsorCode: string;
   rank: RankLevel;
   autoTradeStatus: boolean;
   status: UserStatus;
@@ -71,7 +71,7 @@ export interface User {
   phone: string | null;
   country: string | null;
   role: UserRole;
-  referralCode: string;
+  sponsorCode: string;
   sponsorId: UUID | null;
   walletAddress: EvmAddress | null;
   rank: RankLevel;
@@ -94,7 +94,7 @@ export interface User {
   withdrawLockedUntil?: ISODateString | null;
 
   sponsor?: User | null;
-  referrals?: User[];
+  sponsors?: User[];
   wallets?: Wallet[];
 }
 
@@ -191,7 +191,7 @@ export interface Deposit {
   updatedAt: ISODateString;
 
   user?: User | UserRef;
-  referralBonuses?: ReferralBonus[];
+  sponsorBonuses?: SponsorBonus[];
 }
 
 export interface DepositStatistics {
@@ -327,15 +327,15 @@ export interface SubmitTradeCodeResult {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Referral                                                                    */
+/* Sponsor                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export interface Referral {
+export interface Sponsor {
   id: UUID;
   userId: UUID;
   sponsorId: UUID | null;
   level: number;
-  directReferralCount: number;
+  directSponsorCount: number;
   teamSize: number;
   totalBonusEarned: DecimalString;
   directDepositAmount: DecimalString;
@@ -347,9 +347,9 @@ export interface Referral {
   sponsor?: User | null;
 }
 
-export interface ReferralBonus {
+export interface SponsorBonus {
   id: UUID;
-  referralId: UUID;
+  sponsorId: UUID;
   userId: UUID;
   depositId: UUID;
   depositAmount: DecimalString;
@@ -361,36 +361,39 @@ export interface ReferralBonus {
   createdAt: ISODateString;
 
   user?: User;
-  referral?: Referral;
+  sponsor?: Sponsor;
   deposit?: Deposit;
 }
 
-/** Recursive node from GET /referrals/tree. Depth is bounded by `maxLevel`. */
-export interface ReferralTreeNode {
+/**
+ * Recursive node from the backend's sponsor-tree endpoint (`/referrals/tree`).
+ * Depth is bounded by `maxLevel`.
+ */
+export interface SponsorTreeNode {
   userId: UUID;
   level: number;
-  directReferrals: number;
+  directSponsors: number;
   email?: string | null;
   name?: string | null;
-  children: ReferralTreeNode[];
+  children: SponsorTreeNode[];
 }
 
-export interface ReferralStatistics {
-  totalReferrals: number;
-  directReferrals: number;
+export interface SponsorStatistics {
+  totalSponsors: number;
+  directSponsors: number;
   totalBonuses: number;
   totalBonusAmount: number;
 }
 
-export interface ReferralLink {
+export interface SponsorLink {
   /** Built server-side from FRONTEND_URL as `${FRONTEND_URL}/ref/{code}`. */
-  referralLink: string;
+  sponsorLink: string;
 }
 
-export interface ReferralCodeValidation {
+export interface SponsorCodeValidation {
   valid: boolean;
   sponsorId: UUID;
-  referralCode: string;
+  sponsorCode: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -401,7 +404,7 @@ export interface Rank {
   id: UUID;
   userId: UUID;
   level: RankLevel;
-  directReferrals: number;
+  directSponsors: number;
   teamSize: number;
   directLv1Count: number;
   achievedAt: ISODateString;
@@ -568,7 +571,7 @@ export interface UserDashboard {
     phone: string | null;
     country: string | null;
     role: UserRole;
-    referralCode: string;
+    sponsorCode: string;
     walletAddress: EvmAddress | null;
     rank: RankLevel;
     autoTradeStatus: boolean;
@@ -583,13 +586,13 @@ export interface UserDashboard {
   };
   /** Keyed by WalletType, value is the balance. */
   wallets: Partial<Record<WalletType, DecimalString>>;
-  directReferrals: number;
+  directSponsors: number;
   teamSize: number;
   /** @deprecated Always 0 on the backend. Do not render. */
   totalDeposits: number;
   /** @deprecated Always 0 on the backend. Do not render. */
   totalWithdrawals: number;
-  totalReferrals: number;
+  totalSponsors: number;
 }
 
 export interface AdminDashboard {
@@ -600,7 +603,7 @@ export interface AdminDashboard {
   totalWithdrawals: number;
   pendingWithdrawals: number;
   totalTrades: number;
-  totalReferralBonuses: number;
+  totalSponsorBonuses: number;
   totalRankBonuses: number;
   totalCycleBonuses: number;
   totalAdminCommission: number;
@@ -669,17 +672,17 @@ export interface AdminAnalytics extends AdminDashboard {
     deposits: Partial<Record<DepositStatus, number>>;
     withdrawals: Partial<Record<WithdrawalStatus, number>>;
     trades: Partial<Record<TradeStatus, number>>;
-    referralBonuses: Partial<Record<DepositStatus, number>>;
+    sponsorBonuses: Partial<Record<DepositStatus, number>>;
     cycleBonuses: Partial<Record<CycleBonusStatus, number>>;
     blockchain: Partial<Record<BlockchainTransactionStatus, number>>;
   };
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pool Bonus Request                                                          */
+/* Salary Bonus Request                                                        */
 /* -------------------------------------------------------------------------- */
 
-/** A pool bonus request created by a user, pending admin approval. */
+/** A salary bonus request created by a user, pending admin approval. */
 export interface PoolBonusRequest {
   id: UUID;
   userId: UUID;

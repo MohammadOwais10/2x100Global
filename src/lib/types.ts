@@ -44,7 +44,7 @@ export interface User {
   phone?: string;
   country?: string;
   role: UserRole;
-  referralCode: string;
+  sponsorCode: string;
   sponsorId?: string;
   walletAddress?: string;
   rank: RankLevel;
@@ -86,7 +86,7 @@ export interface Wallet {
 export interface WalletSummary {
   principal?: WalletInfo;
   depositBonus?: WalletInfo;
-  referral?: WalletInfo;
+  sponsor?: WalletInfo;
   tradingProfit?: WalletInfo;
   rankBonus?: WalletInfo;
   poolBonus?: WalletInfo;
@@ -182,26 +182,26 @@ export interface Trade {
 }
 
 // ============================================================================
-// Referral Types
+// Sponsor Types
 // ============================================================================
 
-export interface Referral {
+export interface Sponsor {
   id: string;
   userId: string;
   sponsorId?: string;
   level: number;
   directDepositAmount: string;
   teamDepositAmount: string;
-  directReferralCount: number;
+  directSponsorCount: number;
   teamSize: number;
   totalBonusEarned: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface ReferralBonus {
+export interface SponsorBonus {
   id: string;
-  referralId: string;
+  sponsorId: string;
   userId: string;
   depositId: string;
   depositAmount: string;
@@ -222,7 +222,7 @@ export interface Rank {
   id: string;
   userId: string;
   level: RankLevel;
-  directReferrals: number;
+  directSponsors: number;
   teamSize: number;
   directLv1Count: number;
   requirements?: Record<string, unknown>;
@@ -309,8 +309,8 @@ export interface DashboardData {
     totalWithdrawals: string;
     totalTrades: number;
     totalProfit: string;
-    totalReferralBonus: string;
-    activeReferrals: number;
+    totalSponsorBonus: string;
+    activeSponsors: number;
   };
   recentTrades: Trade[];
   recentDeposits: Deposit[];
@@ -339,7 +339,7 @@ export interface AdminUser {
   phone?: string;
   country?: string;
   role: UserRole;
-  referralCode: string;
+  sponsorCode: string;
   rank: RankLevel;
   status: UserStatus;
   autoTradeStatus: boolean;

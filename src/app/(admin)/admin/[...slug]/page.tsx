@@ -72,7 +72,7 @@ import {
   useAdminDepositsQuery,
   useAdminNotificationsQuery,
   useAdminRanksQuery,
-  useAdminReferralsQuery,
+  useAdminSponsorsQuery,
   useAdminSettingsQuery,
   useAdminTradeScheduleQuery,
   useAdminTradesQuery,
@@ -94,7 +94,7 @@ import {
   type AdminListParams,
 } from "@/lib/api/admin-api";
 import { normalizeError } from "@/lib/api/errors";
-import { formatCount, formatDateTime, humanizeEnum, truncateHex } from "@/lib/utils/format";
+import { formatCount, formatDateTime, humanizeEnum, truncateHex, walletLabel } from "@/lib/utils/format";
 import { CopyButton } from "@/components/common/copy-button";
 import { AdminWithdrawalActions } from "@/features/withdrawals/components/admin-withdrawal-actions";
 import { useApproveDepositMutation } from "@/features/deposits/api/deposits-api";
@@ -135,7 +135,7 @@ import type {
   Ticket,
   TicketMessage,
   Rank,
-  Referral,
+  Sponsor,
   Setting,
   Trade,
   TradeExclusion,
@@ -402,7 +402,7 @@ function UserRewardAction({ user }: { user: User }) {
             >
               {REWARD_WALLET_TYPES.map((t) => (
                 <option key={t} value={t}>
-                  {humanizeEnum(WalletType[t])}
+                  {walletLabel(WalletType[t])}
                 </option>
               ))}
             </select>
@@ -486,7 +486,7 @@ const withdrawalsColumns: Array<DataTableColumn<Withdrawal>> = [
   { id: "address", header: "Address", cell: (row) => <span className="font-mono text-xs">{truncateHex(row.destinationAddress)}</span>, nowrap: true },
   { id: "amount", header: "Net amount", cell: (row) => <Money value={row.netAmount} showCurrency size="sm" />, nowrap: true },
   { id: "status", header: "Status", cell: (row) => <StatusBadge status={row.status} /> },
-  { id: "wallet", header: "Wallet", cell: (row) => humanizeEnum(row.walletType) },
+  { id: "wallet", header: "Wallet", cell: (row) => walletLabel(row.walletType) },
   { id: "network", header: "Network", cell: (row) => row.network },
   { id: "created", header: "Created", cell: (row) => formatDateTime(row.createdAt), nowrap: true },
   {
@@ -515,7 +515,7 @@ const tradesColumns: Array<DataTableColumn<Trade>> = [
 
 const walletsColumns: Array<DataTableColumn<Wallet>> = [
   { id: "user", header: "User", cell: (row) => person(row.user, row.userId) },
-  { id: "type", header: "Wallet", cell: (row) => humanizeEnum(row.type) },
+  { id: "type", header: "Wallet", cell: (row) => walletLabel(row.type) },
   { id: "balance", header: "Balance", cell: (row) => <Money value={row.balance} showCurrency size="sm" />, nowrap: true },
   { id: "credit", header: "Total credit", cell: (row) => <Money value={row.totalCredit} showCurrency size="sm" />, nowrap: true },
   { id: "debit", header: "Total debit", cell: (row) => <Money value={row.totalDebit} showCurrency size="sm" />, nowrap: true },
@@ -576,7 +576,7 @@ function UserTeamDialog({ userId, name }: { userId: UUID; name: string }) {
                       <Money value={String(m.investedAmount)} showCurrency size="sm" />
                     </td>
                     <td className="py-2 text-right">
-                      {formatCount(m.directReferralCount)}
+                      {formatCount(m.directSponsorCount)}
                     </td>
                   </tr>
                 ))}
@@ -589,11 +589,11 @@ function UserTeamDialog({ userId, name }: { userId: UUID; name: string }) {
   );
 }
 
-const referralsColumns: Array<DataTableColumn<Referral>> = [
+const sponsorsColumns: Array<DataTableColumn<Sponsor>> = [
   { id: "user", header: "User", cell: (row) => person(row.user, row.userId) },
   { id: "sponsor", header: "Sponsor", cell: (row) => person(row.sponsor, row.sponsorId || undefined) },
   { id: "level", header: "Level", cell: (row) => formatCount(row.level) },
-  { id: "direct", header: "Direct", cell: (row) => formatCount(row.directReferralCount), align: "right" },
+  { id: "direct", header: "Direct", cell: (row) => formatCount(row.directSponsorCount), align: "right" },
   { id: "team", header: "Team size", cell: (row) => formatCount(row.teamSize), align: "right" },
   { id: "directDeposits", header: "Direct deposits", cell: (row) => <Money value={row.directDepositAmount} showCurrency size="sm" />, nowrap: true },
   { id: "teamDeposits", header: "Team deposits", cell: (row) => <Money value={row.teamDepositAmount} showCurrency size="sm" />, nowrap: true },
@@ -604,9 +604,9 @@ const referralsColumns: Array<DataTableColumn<Referral>> = [
 const ranksColumns: Array<DataTableColumn<Rank>> = [
   { id: "user", header: "User", cell: (row) => person(row.user, row.userId) },
   { id: "rank", header: "Rank", cell: (row) => <StatusBadge status={row.level} showIcon={false} /> },
-  { id: "direct", header: "Direct referrals", cell: (row) => formatCount(row.directReferrals), align: "right" },
+  { id: "direct", header: "Direct sponsors", cell: (row) => formatCount(row.directSponsors), align: "right" },
   { id: "team", header: "Team size", cell: (row) => formatCount(row.teamSize), align: "right" },
-  { id: "bonus", header: "Rank bonus", cell: (row) => <Money value={row.totalRankBonusEarned} showCurrency size="sm" />, nowrap: true },
+  { id: "bonus", header: "Leadership Rank Bonus", cell: (row) => <Money value={row.totalRankBonusEarned} showCurrency size="sm" />, nowrap: true },
   { id: "achieved", header: "Achieved", cell: (row) => formatDateTime(row.achievedAt), nowrap: true },
 ];
 
@@ -1193,7 +1193,7 @@ function AnalyticsPage() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pool Bonus Requests — admin approval workflow                               */
+/* Salary Bonus Requests — admin approval workflow                               */
 /* -------------------------------------------------------------------------- */
 
 function PoolBonusRequestsPage() {
@@ -1266,7 +1266,7 @@ function PoolBonusRequestsPage() {
 
   return (
     <>
-      <PageHeader title="Pool Bonus Requests" description="Review and approve, reject, or update pool bonus withdrawal requests from users." />
+      <PageHeader title="Salary Bonus Requests" description="Review and approve, reject, or update salary bonus withdrawal requests from users." />
       <div className="mb-4 flex items-center gap-3">
         <Label htmlFor="pool-status-filter" className="text-sm">Filter:</Label>
         <select id="pool-status-filter" className="border-input bg-background h-9 rounded-md border px-3 text-sm" value={status} onChange={(e) => { setStatus(e.target.value as PoolBonusRequestStatus | ""); setPage(1); }}>
@@ -1333,12 +1333,12 @@ function PoolBonusRequestsPage() {
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>Reject request</CardTitle>
-              <CardDescription>Provide a reason for rejecting this pool bonus request.</CardDescription>
+              <CardDescription>Provide a reason for rejecting this salary bonus request.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="reject-reason">Rejection reason</Label>
-                <Input id="reject-reason" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="e.g., Insufficient pool bonus balance" />
+                <Input id="reject-reason" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="e.g., Insufficient salary bonus balance" />
               </div>
               <div className="flex gap-2">
                 <Button variant="destructive" onClick={() => handleReject(rejectingId)} disabled={rejectMutation.isLoading}>{rejectMutation.isLoading ? "Processing…" : "Reject"}</Button>
@@ -1814,7 +1814,7 @@ function AdminUserDetailPage({ userId }: { userId: UUID }) {
               <DetailRow label="Country" value={user.country || "—"} />
               <DetailRow label="Role" value={humanizeEnum(user.role)} />
               <DetailRow label="Rank" value={humanizeEnum(user.rank)} />
-              <DetailRow label="Referral code" value={user.referralCode} />
+              <DetailRow label="Sponsor code" value={user.sponsorCode} />
               <DetailRow label="Wallet address" value={user.walletAddress || "—"} />
               <div className="flex items-center justify-between border-t pt-3">
                 <span className="text-muted-foreground text-sm">Status</span>
@@ -2002,8 +2002,8 @@ export default function AdminModulePage() {
       return <AdminListPage title="Trading" description="Control trading, manage excluded users, and review platform trades." icon={ChartLine} columns={tradesColumns} useListQuery={useAdminTradesQuery} getRowId={(row) => row.id} statusOptions={["PENDING", "ACTIVE", "COMPLETED", "FAILED", "CANCELLED"]} controls={<TradingControls />} />;
     case ROUTES.admin.wallets:
       return <AdminListPage title="Wallets" description="Inspect member wallet balances and aggregate movement." icon={WalletCards} columns={walletsColumns} useListQuery={useAdminWalletsQuery} getRowId={(row) => row.id} />;
-    case ROUTES.admin.referralReports:
-      return <AdminListPage title="Referrals" description="Review sponsorship, team growth, deposits, and rewards." icon={Network} columns={referralsColumns} useListQuery={useAdminReferralsQuery} getRowId={(row) => row.id} />;
+    case ROUTES.admin.sponsorReports:
+      return <AdminListPage title="Sponsors" description="Review sponsorship, team growth, deposits, and rewards." icon={Network} columns={sponsorsColumns} useListQuery={useAdminSponsorsQuery} getRowId={(row) => row.id} />;
     case ROUTES.admin.rankReports:
       return <AdminListPage title="Ranks" description="Review achieved ranks, team qualification, and bonuses." icon={Trophy} columns={ranksColumns} useListQuery={useAdminRanksQuery} getRowId={(row) => row.id} />;
     case ROUTES.admin.cycleBonusReports:

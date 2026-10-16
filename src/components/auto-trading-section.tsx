@@ -36,7 +36,7 @@ export function AutoTradingSection() {
                     key={step.title}
                     className="grid grid-cols-[auto_1fr] gap-4 rounded-2xl border border-[var(--line)] bg-[#081912]/55 px-4 py-4"
                   >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0f5c38] text-xs font-semibold text-white">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line)] bg-[#0a2015] text-xs font-semibold text-[var(--gold-bright)]">
                       {index + 1}
                     </span>
                     <div>

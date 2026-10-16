@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
@@ -8,13 +7,16 @@ import { ImageIcon, Megaphone } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
-import { UserMenu } from "./user-menu";
+import { SignOutButton, useSignOut } from "./user-menu";
 import { CommandPalette } from "./command-palette";
 import { PageTransition } from "@/components/common/page-transition";
 import { useUiPreferences } from "@/hooks/use-sidebar-persistence";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { mobileNavSet, selectMobileNavOpen } from "@/store/slices/ui-slice";
-import { useLogoutMutation } from "@/features/auth/api/auth-api";
+import {
+  mobileNavSet,
+  selectMobileNavOpen,
+  selectSidebarCollapsed,
+} from "@/store/slices/ui-slice";
 import { useUserDashboardQuery } from "@/features/users/api/users-api";
 import { ROUTES } from "@/config/routes";
 import { ADMIN_NAV, USER_NAV, type NavSection } from "@/config/navigation";
@@ -83,20 +85,9 @@ export function AppShell({
     : sections;
 
   const mobileNavOpen = useAppSelector(selectMobileNavOpen);
+  const sidebarCollapsed = useAppSelector(selectSidebarCollapsed);
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  const [logout] = useLogoutMutation();
-
-  const handleSignOut = async () => {
-    try {
-      await logout().unwrap();
-    } catch {
-      /* local state is cleared regardless — see the mutation's onQueryStarted */
-    } finally {
-      router.replace(ROUTES.login);
-      router.refresh();
-    }
-  };
+  const { signOut } = useSignOut();
 
   return (
     <div className="bg-background flex h-dvh overflow-hidden">
@@ -104,7 +95,7 @@ export function AppShell({
       <div className="hidden h-full lg:flex">
         <Sidebar
           sections={effectiveSections}
-          footer={<UserMenu />}
+          footer={<SignOutButton collapsed={sidebarCollapsed} />}
         />
       </div>
 
@@ -118,7 +109,7 @@ export function AppShell({
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <Sidebar
             sections={effectiveSections}
-            footer={<UserMenu />}
+            footer={<SignOutButton />}
             mobile
             className="w-full border-r-0"
           />
@@ -126,7 +117,7 @@ export function AppShell({
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar>{topbarActions}</Topbar>
+        <Topbar sections={effectiveSections}>{topbarActions}</Topbar>
 
         {/* `min-w-0` is load-bearing: without it a wide table inside a flex
             child refuses to shrink and blows out the whole layout. */}
@@ -142,7 +133,7 @@ export function AppShell({
         </main>
       </div>
 
-      <CommandPalette sections={effectiveSections} onSignOut={handleSignOut} />
+      <CommandPalette sections={effectiveSections} onSignOut={signOut} />
     </div>
   );
 }

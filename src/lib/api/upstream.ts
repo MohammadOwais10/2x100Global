@@ -1,6 +1,7 @@
 import "server-only";
 
 import { env } from "@/config/env";
+import { sponsorizeResponse } from "./terminology";
 
 /**
  * Low-level HTTP client for the Express backend.
@@ -69,6 +70,7 @@ export async function callUpstream(
 
   const finalHeaders: Record<string, string> = {
     accept: "application/json",
+     "ngrok-skip-browser-warning": "true",
     ...headers,
   };
 
@@ -160,7 +162,10 @@ export async function callUpstream(
   return {
     status: response.status,
     ok: response.ok,
-    body: parsed,
+    // The backend speaks "referral"; the frontend speaks "sponsor". Rewrite the
+    // keys once, here, so no call site has to know the backend's word. See
+    // `terminology.ts` for why this is recursive and what deliberately stays.
+    body: parsed === null ? parsed : sponsorizeResponse(parsed),
     rawText,
     headers: response.headers,
   };

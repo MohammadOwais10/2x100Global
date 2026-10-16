@@ -95,7 +95,7 @@ export type WithdrawalStatus =
 /**
  * NOTE: this is a strict subset of WalletType — ADMIN_COMMISSION is absent,
  * because users cannot withdraw from the platform's commission wallet.
- * POOL_BONUS is also absent — it requires admin approval via pool bonus request.
+ * POOL_BONUS is also absent — it requires admin approval via salary bonus request.
  * Do not substitute WalletType here; the backend will 400.
  */
 export const WithdrawalWalletType = {

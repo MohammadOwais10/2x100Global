@@ -41,7 +41,7 @@ export const REFRESH_TOKEN_COOKIE = "mlm.rt";
 const REFRESH_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
 /**
- * `lax` rather than `strict`: the referral funnel sends users to
+ * `lax` rather than `strict`: the sponsor funnel sends users to
  * `/ref/<code>` from external sites, and `strict` would drop the session
  * cookie on that top-level cross-site navigation, silently logging people out
  * mid-signup. `lax` still blocks CSRF on state-changing POSTs.

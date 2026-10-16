@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import type { ReferralTreeNode } from "@/types/models";
+import type { SponsorTreeNode } from "@/types/models";
 
 interface NetworkTreeProps {
-  data: ReferralTreeNode;
+  data: SponsorTreeNode;
   className?: string;
 }
 
@@ -30,7 +30,7 @@ const badgeColors: Record<number, string> = {
   4: "bg-rose-500/20 text-rose-200 border-rose-500/40",
 };
 
-function collectMatches(node: ReferralTreeNode, term: string, set: Set<string>) {
+function collectMatches(node: SponsorTreeNode, term: string, set: Set<string>) {
   const t = term.toLowerCase();
   if (
     node.userId.toLowerCase().includes(t) ||
@@ -43,7 +43,7 @@ function collectMatches(node: ReferralTreeNode, term: string, set: Set<string>) 
 }
 
 function collectAncestorsToExpand(
-  node: ReferralTreeNode,
+  node: SponsorTreeNode,
   matched: Set<string>,
   expand: Set<string>,
 ): boolean {
@@ -66,7 +66,7 @@ function TreeNode({
   onToggle,
   matched,
 }: {
-  node: ReferralTreeNode;
+  node: SponsorTreeNode;
   level: number;
   expanded: boolean;
   onToggle: (id: string) => void;
@@ -123,7 +123,7 @@ function TreeNode({
             </p>
           )}
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-            <span>{node.directReferrals} direct</span>
+            <span>{node.directSponsors} direct</span>
             {hasChildren && (
               <span className="ml-auto">{node.children.length} children</span>
             )}
@@ -151,7 +151,7 @@ function TreeBranch({
   expandedIds,
   matched,
 }: {
-  node: ReferralTreeNode;
+  node: SponsorTreeNode;
   level: number;
   onToggle: (id: string) => void;
   expandedIds: Set<string>;
@@ -241,7 +241,7 @@ export function NetworkTree({ data, className }: NetworkTreeProps) {
 
   const expandAll = () => {
     const all = new Set<string>();
-    function walk(node: ReferralTreeNode) {
+    function walk(node: SponsorTreeNode) {
       all.add(node.userId);
       node.children.forEach(walk);
     }

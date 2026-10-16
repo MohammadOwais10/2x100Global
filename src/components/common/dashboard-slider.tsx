@@ -106,7 +106,7 @@ export function DashboardSlider() {
   if (isLoading || posts.length === 0) return null;
 
   return (
-    <div className="relative mb-6 rounded-2xl border bg-card overflow-hidden">
+    <div className="relative rounded-2xl border bg-card overflow-hidden">
       <div className="relative aspect-[21/8] w-full sm:aspect-[21/6]">
         {/* 3D Carousel Container */}
         <div
@@ -333,16 +333,21 @@ export function NewsTicker() {
 
   if (isLoading || news.length === 0) return null;
 
+  const minItems = 20;
+  const repeat = Math.max(1, Math.ceil(minItems / news.length));
+  const unit = Array.from({ length: repeat }, () => news).flat();
+  const items = [...unit, ...unit];
+
   return (
-    <div className="mb-6 flex items-center gap-3 rounded-xl border bg-card px-4 py-3">
+    <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 mt-2">
       <div className="flex shrink-0 items-center gap-2 text-primary">
         <Newspaper className="size-4" />
         <span className="text-sm font-semibold">News</span>
       </div>
       <div className="relative flex-1 overflow-hidden">
-        <div className="flex w-max gap-8 whitespace-nowrap animate-news-scroll">
-          {[...news, ...news].map((item, i) => (
-            <span key={i} className="text-sm text-muted-foreground">
+        <div className="flex w-max whitespace-nowrap animate-news-scroll">
+          {items.map((item, i) => (
+            <span key={i} className="pr-8 text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{item.title}:</span> {item.message}
             </span>
           ))}

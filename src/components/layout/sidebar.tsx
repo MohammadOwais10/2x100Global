@@ -13,7 +13,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Brand } from "./brand";
+import { BrandMark } from "./brand";
+import { ROUTES } from "@/config/routes";
 import { isNavItemActive, type NavItem, type NavSection } from "@/config/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -70,16 +71,22 @@ export function Sidebar({
       )}
       data-collapsed={collapsed}
     >
-      <div
-        className={cn(
-          "flex h-16 shrink-0 items-center gap-2 px-4",
-          collapsed && "justify-center px-0",
-        )}
-      >
-        <Brand collapsed={collapsed} />
+      <div className="flex h-16 shrink-0 items-center justify-start px-4">
+        <Link
+          href={ROUTES.home}
+          className="group rounded-lg outline-none focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2"
+          aria-label="2X100 Global — home"
+        >
+          <BrandMark
+            className={cn(
+              "transition-[width,height] duration-300 group-hover:scale-105",
+              collapsed ? "size-20" : "size-40",
+            )}
+          />
+        </Link>
       </div>
 
-      <ScrollArea className="flex-1 overflow-hidden">
+      <ScrollArea className="flex-1 overflow-hidden pt-2">
         <nav className="space-y-6 px-3 pb-4" aria-label="Main">
           {sections.map((section, sectionIndex) => (
             <div key={section.label ?? `section-${sectionIndex}`}>

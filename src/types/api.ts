@@ -90,7 +90,7 @@ export type ApiEnvelope<T> = ApiSuccess<T> | ApiFailure;
  * choice on our side:
  *
  *   sibling `meta`   -> ledgers, deposits, withdrawals, trades,
- *                       referral bonuses, cycle bonuses
+ *                       sponsor bonuses, cycle bonuses
  *   inline in `data` -> GET /users, GET /admin/users,
  *                       GET /admin/deposits, GET /admin/withdrawals,
  *                       GET /notifications

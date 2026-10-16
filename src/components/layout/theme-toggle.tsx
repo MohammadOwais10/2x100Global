@@ -25,7 +25,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   useEffect(() => setMounted(true), []);
 
   if (!mounted) {
-    return <Skeleton className={cn("size-9 rounded-lg", className)} />;
+    return <Skeleton className={cn("bg-accent size-9 rounded-full", className)} />;
   }
 
   const isDark = resolvedTheme === "dark";
@@ -36,7 +36,13 @@ export function ThemeToggle({ className }: { className?: string }) {
       size="icon"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-      className={cn("relative size-9 overflow-hidden", className)}
+      // Resting fill matches the hover fill: a permanently raised chip next to
+      // the account icon, so the two header controls read as a pair instead of
+      // one of them appearing to light up on approach.
+      className={cn(
+        "bg-accent/50 text-accent-foreground hover:bg-accent relative size-9 overflow-hidden rounded-lg",
+        className,
+      )}
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span

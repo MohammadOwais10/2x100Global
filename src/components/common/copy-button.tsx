@@ -15,7 +15,7 @@ import {
 /**
  * Copy-to-clipboard control.
  *
- * Used constantly in this product — wallet addresses, tx hashes, referral
+ * Used constantly in this product — wallet addresses, tx hashes, sponsor
  * codes and links. Getting it right matters more than it looks:
  *
  *   - `navigator.clipboard` is unavailable on insecure origins and in some

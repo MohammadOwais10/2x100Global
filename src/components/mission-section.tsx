@@ -1,4 +1,4 @@
-import { missionVision } from "@/lib/content";
+import { intro, missionVision } from "@/lib/content";
 import { Reveal } from "@/components/reveal";
 
 export function MissionSection() {
@@ -7,11 +7,14 @@ export function MissionSection() {
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <Reveal>
           <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-[#8fae98]">
-            Introduction
+            {intro.eyebrow}
           </p>
           <h2 className="mt-4 max-w-3xl font-display text-4xl tracking-tight text-white md:text-5xl">
-            Built for clarity in a complex market
+            {intro.title}
           </h2>
+          <p className="mt-5 max-w-3xl text-base leading-relaxed text-[#b5c7bb] md:text-lg">
+            {intro.body}
+          </p>
         </Reveal>
 
         <div className="mt-14 grid gap-6 lg:grid-cols-2">

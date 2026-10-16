@@ -22,7 +22,7 @@ import { buttonVariants } from "@/components/ui/button";
  * Confirmation dialog for destructive or irreversible actions.
  *
  * Every money-moving admin action in this product is irreversible — approving
- * a deposit credits wallets and cascades referral bonuses; processing a
+ * a deposit credits wallets and cascades sponsor bonuses; processing a
  * withdrawal broadcasts an on-chain transfer. There is no undo, so the
  * confirmation step is a real control, not decoration.
  *

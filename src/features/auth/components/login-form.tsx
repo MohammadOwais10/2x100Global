@@ -5,18 +5,18 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { LockKeyhole, Mail } from "lucide-react";
 
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { AuthFieldLabel, AuthInput, AuthInputShell } from "./auth-field";
 import { PasswordInput } from "./password-input";
 import {
   AuthFormError,
@@ -87,8 +87,10 @@ export function LoginForm() {
   return (
     <>
       <AuthFormHeader
-        title="Sign in"
-        description="Access your portfolio, trading sessions and referral network."
+        eyebrow="Member access"
+        title="Welcome"
+        accent="back."
+        description="Sign in to reach your portfolio, trading sessions and sponsor network."
       />
 
       <AuthFormError error={formError} />
@@ -99,11 +101,13 @@ export function LoginForm() {
             control={form.control}
             name="email"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Email address</AuthFieldLabel>
+
+                <AuthInputShell icon={Mail}>
+                  <AuthInput
                     {...field}
+                    hasIcon
                     type="email"
                     inputMode="email"
                     autoComplete="email"
@@ -111,7 +115,8 @@ export function LoginForm() {
                     placeholder="you@example.com"
                     aria-invalid={Boolean(fieldState.error)}
                   />
-                </FormControl>
+                </AuthInputShell>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -121,24 +126,27 @@ export function LoginForm() {
             control={form.control}
             name="password"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
+              <FormItem className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <AuthFieldLabel>Password</AuthFieldLabel>
                   <Link
                     href={ROUTES.forgotPassword}
-                    className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 transition-colors hover:underline"
+                    className="text-muted-foreground hover:text-primary text-xs font-medium underline-offset-4 transition-colors hover:underline"
                   >
                     Forgot password?
                   </Link>
                 </div>
+
                 <FormControl>
                   <PasswordInput
                     {...field}
+                    icon={LockKeyhole}
                     autoComplete="current-password"
                     placeholder="Enter your password"
                     invalid={Boolean(fieldState.error)}
                   />
                 </FormControl>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -148,17 +156,18 @@ export function LoginForm() {
             control={form.control}
             name="rememberMe"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center gap-2 space-y-0">
+              <FormItem className="flex flex-row items-center gap-2.5 space-y-0 pt-0.5">
                 <FormControl>
                   <Checkbox
                     id="rememberMe"
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    className="size-[1.125rem] rounded-[6px]"
                   />
                 </FormControl>
                 <Label
                   htmlFor="rememberMe"
-                  className="text-muted-foreground cursor-pointer text-sm font-normal"
+                  className="text-muted-foreground cursor-pointer text-[0.8125rem] font-normal"
                 >
                   Keep me signed in
                 </Label>
@@ -166,9 +175,11 @@ export function LoginForm() {
             )}
           />
 
-          <AuthSubmitButton loading={submitting} loadingLabel="Signing in…">
-            Sign in
-          </AuthSubmitButton>
+          <div className="pt-1.5">
+            <AuthSubmitButton loading={submitting} loadingLabel="Signing in…">
+              Sign in
+            </AuthSubmitButton>
+          </div>
         </form>
       </Form>
 

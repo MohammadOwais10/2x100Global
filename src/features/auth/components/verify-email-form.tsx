@@ -5,25 +5,17 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MailCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import { MailCheck, Send } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { AuthFieldLabel } from "./auth-field";
+import { OtpInput } from "./otp-input";
 import {
   AuthFormError,
   AuthFormHeader,
   AuthSubmitButton,
-} from "@/features/auth/components/auth-form-shell";
+} from "./auth-form-shell";
 import { useVerifyEmailMutation, useResendOtpMutation } from "@/features/auth/api/auth-api";
 import { useFormSubmit } from "@/features/auth/hooks/use-form-submit";
 import {
@@ -82,22 +74,18 @@ export function VerifyEmailForm() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="border-profit/25 bg-profit-muted text-profit mb-6 grid size-12 place-items-center rounded-2xl border">
-        <MailCheck className="size-6" strokeWidth={1.75} />
-      </div>
-
+    <>
       <AuthFormHeader
-        title="Verify your email"
+        eyebrow="One last step"
+        title="Verify your"
+        accent="email."
         description={
           <>
             We sent a 6-digit code to{" "}
-            <span className="text-foreground font-medium">{email || "your email"}</span>.
-            Enter it below to finish creating your account.
+            <span className="text-foreground font-medium break-all">
+              {email || "your email"}
+            </span>
+            . Enter it below to finish creating your account.
           </>
         }
       />
@@ -112,51 +100,59 @@ export function VerifyEmailForm() {
             control={form.control}
             name="otp"
             render={({ field, fieldState }) => (
-              <FormItem>
-                <FormLabel>Verification code</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    autoFocus
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="6-digit code"
-                    className="font-mono"
-                    aria-invalid={Boolean(fieldState.error)}
-                  />
-                </FormControl>
+              <FormItem className="space-y-2">
+                <AuthFieldLabel>Verification code</AuthFieldLabel>
+
+                <OtpInput
+                  {...field}
+                  onChange={field.onChange}
+                  placeholder="000000"
+                  aria-label="6-digit verification code"
+                  invalid={Boolean(fieldState.error)}
+                />
+
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <AuthSubmitButton loading={submitting} loadingLabel="Verifying…">
-            Verify and continue
-          </AuthSubmitButton>
+          <div className="pt-1">
+            <AuthSubmitButton loading={submitting} loadingLabel="Verifying…">
+              Verify and continue
+            </AuthSubmitButton>
+          </div>
         </form>
       </Form>
 
-      <p className="text-muted-foreground mt-6 text-center text-sm">
-        Didn&apos;t get it?{" "}
-        <button
-          type="button"
-          onClick={handleResend}
-          disabled={resending}
-          className="text-foreground font-medium underline-offset-4 hover:underline disabled:opacity-50"
-        >
-          {resending ? "Sending…" : "Resend code"}
-        </button>
-      </p>
+      <div className="mt-8 space-y-2.5 border-t border-border/50 pt-6 text-center">
+        <p className="text-muted-foreground text-sm">
+          Didn&apos;t get it?{" "}
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending || !email}
+            className="text-foreground inline-flex items-center gap-1.5 font-medium underline-offset-4 transition-colors hover:text-primary hover:underline disabled:opacity-50"
+          >
+            <Send className="size-3.5" strokeWidth={1.9} aria-hidden="true" />
+            {resending ? "Sending…" : "Resend code"}
+          </button>
+        </p>
 
-      <p className="text-muted-foreground mt-2 text-center text-sm">
-        Wrong email?{" "}
-        <Link
-          href={ROUTES.signup}
-          className="text-foreground font-medium underline-offset-4 hover:underline"
-        >
-          Sign up again
-        </Link>
+        <p className="text-muted-foreground text-sm">
+          Wrong email?{" "}
+          <Link
+            href={ROUTES.signup}
+            className="text-foreground font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
+          >
+            Sign up again
+          </Link>
+        </p>
+      </div>
+
+      <p className="text-muted-foreground/70 mt-6 flex items-center justify-center gap-1.5 text-[0.6875rem]">
+        <MailCheck className="text-primary size-3" strokeWidth={2.5} aria-hidden="true" />
+        Codes expire after 15 minutes
       </p>
-    </motion.div>
+    </>
   );
 }

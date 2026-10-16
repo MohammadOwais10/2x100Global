@@ -19,8 +19,12 @@ export const ROUTES = {
   verifyEmail: "/verify-email",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
-  /** Referral landing: /ref/<8-char code>, redirects into signup. */
-  referralLanding: (code: string) => `/ref/${code}`,
+  /**
+   * Sponsor landing: /ref/<8-char code>, redirects into signup.
+   * The `/ref/` path is fixed by the backend, which builds invite links as
+   * `${FRONTEND_URL}/ref/{code}` — do not rename it to `/sponsor/`.
+   */
+  sponsorLanding: (code: string) => `/ref/${code}`,
 
   // -- authenticated user ---------------------------------------------------
   dashboard: "/dashboard",
@@ -30,18 +34,18 @@ export const ROUTES = {
   transactions: "/transactions",
   trading: "/trading",
   tradingHistory: "/trading/history",
-  referral: "/referral",
-  referralTree: "/referral/tree",
-  referralEarnings: "/referral/earnings",
+  sponsor: "/sponsor",
+  sponsorTree: "/sponsor/tree",
+  sponsorEarnings: "/sponsor/earnings",
   ranks: "/ranks",
   cycleBonus: "/rewards/cycle-bonus",
-  poolBonus: "/rewards/pool-bonus",
-  depositBonus: "/rewards/deposit-bonus",
+  poolBonus: "/rewards/salary-bonus",
+  depositBonus: "/rewards/welcome-bonus",
   calculator: "/calculator",
   notifications: "/notifications",
   profile: "/profile",
   settings: "/settings",
-  support: "/support",
+  support: "/tickets",
   tickets: "/tickets",
   myPosts: "/my-posts",
   myNews: "/my-news",
@@ -56,10 +60,10 @@ export const ROUTES = {
     withdrawals: "/admin/withdrawals",
     trading: "/admin/trading",
     wallets: "/admin/wallets",
-    referralReports: "/admin/reports/referrals",
+    sponsorReports: "/admin/reports/sponsors",
     rankReports: "/admin/reports/ranks",
     cycleBonusReports: "/admin/reports/cycle-bonus",
-    poolBonusRequests: "/admin/pool-bonus-requests",
+    poolBonusRequests: "/admin/salary-bonus-requests",
     posts: "/admin/posts",
     news: "/admin/news",
     tickets: "/admin/tickets",
@@ -81,7 +85,7 @@ export const PROTECTED_PREFIXES = [
   "/wallet",
   "/transactions",
   "/trading",
-  "/referral",
+  "/sponsor",
   "/ranks",
   "/rewards",
   "/calculator",
