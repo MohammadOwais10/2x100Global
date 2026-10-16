@@ -16,6 +16,7 @@ export const ROUTES = {
   home: "/",
   login: "/login",
   signup: "/signup",
+  verifyEmail: "/verify-email",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   /** Referral landing: /ref/<8-char code>, redirects into signup. */

@@ -17,7 +17,7 @@ export function TradePlanProgress() {
   const stats = useTradeStatisticsQuery();
   const plan = stats.data?.tradePlan;
 
-  const completed = stats.data?.completedTrades ?? 0;
+  const completed = stats.data?.tradesSinceInflow ?? 0;
   const total = plan?.totalTrades ?? 0;
   const penaltyFreeAt = plan?.penaltyFreeAt ?? 0;
   const percent = Math.round(plan?.completionPercent ?? 0);
@@ -33,7 +33,7 @@ export function TradePlanProgress() {
         </CardTitle>
         <CardDescription>
           Complete {penaltyFreeAt} of {total} trades to unlock penalty-free
-          Principal withdrawals.
+          Principal & Trading Profit withdrawals.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -55,8 +55,8 @@ export function TradePlanProgress() {
             >
               <ShieldCheck className="size-4 shrink-0" />
               {penaltyFree
-                ? "Penalty-free Principal withdrawals unlocked."
-                : `${remaining} trades left to waive the 40% early-exit penalty on Principal withdrawals.`}
+                ? "Penalty-free Principal & Trading Profit withdrawals unlocked."
+                : `${remaining} trades left to waive the 40% early-exit penalty on Principal & Trading Profit withdrawals.`}
             </p>
           </>
         )}

@@ -40,6 +40,7 @@ import { Money } from "@/components/common/money";
 import { PageHeader } from "@/components/common/page-header";
 import { ShareReferralButton } from "@/components/common/share-referral-button";
 import { StatCard } from "@/components/common/stat-card";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { TradePlanProgress } from "@/components/common/trade-plan-progress";
 import { WithdrawPasswordDialog } from "@/components/common/withdraw-password-dialog";
 import { RankBadge, StatusBadge } from "@/components/common/status-badge";
@@ -81,7 +82,10 @@ import {
   useTradesQuery,
 } from "@/features/portal/api/portal-api";
 import { SessionCodeCard } from "@/features/trading/components/session-code-card";
-import { useWalletSummaryQuery } from "@/features/wallet/api/wallet-api";
+import {
+  useWalletSummaryQuery,
+  useTransferToPrincipalMutation,
+} from "@/features/wallet/api/wallet-api";
 import {
   useCreateWithdrawalMutation,
   useWithdrawalsQuery,
@@ -109,7 +113,7 @@ import {
   postImageUrl,
 } from "@/features/content/api/content-api";
 import type { Post, NewsItem } from "@/types/models";
-import { WithdrawalWalletType, PoolBonusRequestType } from "@/types/enums";
+import { WithdrawalWalletType, PoolBonusRequestType, WalletType } from "@/types/enums";
 import type { UUID } from "@/types/api";
 import { RankLevel } from "@/types/enums";
 import type {
@@ -189,10 +193,18 @@ export default function UserPortalPage({
   notFound();
 }
 
+const TRANSFER_SOURCES: (keyof typeof WalletType)[] = [
+  "REFERRAL",
+  "POOL_BONUS",
+  "RANK_BONUS",
+  "TRADING_PROFIT",
+];
+
 function WalletPage() {
   const query = useWalletSummaryQuery();
   const entries = Object.entries(query.data?.wallets ?? {}).filter(
-    ([type]) => type !== "ADMIN_COMMISSION",
+    // DEPOSIT_BONUS is merged into Principal — the card stays hidden
+    ([type]) => type !== "ADMIN_COMMISSION" && type !== "DEPOSIT_BONUS",
   );
   return (
     <>
@@ -221,10 +233,134 @@ function WalletPage() {
             index={i + 1}
           />
         ))}
-       
       </div>
+      <MoveToPrincipalCard />
       <ErrorText error={query.error} />
     </>
+  );
+}
+
+function MoveToPrincipalCard() {
+  const [sourceWallet, setSourceWallet] =
+    useState<keyof typeof WalletType>("REFERRAL");
+  const [amount, setAmount] = useState("");
+  const [transfer, { isLoading }] = useTransferToPrincipalMutation();
+  const summary = useWalletSummaryQuery();
+
+  const selectedBalance = Number(
+    summary.data?.wallets[sourceWallet]?.balance ?? 0,
+  );
+  const disabled = selectedBalance <= 0;
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    const value = Number(amount);
+    if (!(value > 0)) return toast.error("Enter a positive amount.");
+    if (value > selectedBalance)
+      return toast.error(
+        `Amount exceeds ${title(sourceWallet)} balance ($${selectedBalance.toFixed(2)}).`,
+      );
+    setConfirmOpen(true);
+  }
+
+  async function doTransfer() {
+    try {
+      const result = await transfer({
+        sourceWallet,
+        amount: Number(amount),
+      }).unwrap();
+      toast.success(
+        `Moved $${result.amount} to Principal — trade counter restarted for penalty-free withdrawals.`,
+      );
+      setAmount("");
+    } catch (error) {
+      toast.error(
+        normalizeError(error as Parameters<typeof normalizeError>[0])
+          ?.message || "Transfer failed",
+      );
+    }
+  }
+
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Move to Principal</CardTitle>
+        <CardDescription>
+          Compound bonus wallets into your stake. Moves balance into
+          Principal and restarts the trade-plan counter — the next
+          penalty-free withdrawal needs 140 more completed trades.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form
+          onSubmit={submit}
+          className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="transfer-source">From wallet</Label>
+            <select
+              id="transfer-source"
+              className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm sm:w-56"
+              value={sourceWallet}
+              onChange={(e) =>
+                setSourceWallet(e.target.value as keyof typeof WalletType)
+              }
+            >
+              {TRANSFER_SOURCES.map((v) => (
+                <option key={v} value={v}>
+                  {title(v)} — $
+                  {Number(
+                    summary.data?.wallets[v]?.balance ?? 0,
+                  ).toFixed(2)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="transfer-amount">Amount</Label>
+            <Input
+              id="transfer-amount"
+              type="number"
+              min="0.00000001"
+              max={selectedBalance || undefined}
+              step="any"
+              placeholder={`Max $${selectedBalance.toFixed(2)}`}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="sm:w-40"
+              required
+            />
+          </div>
+          <Button type="submit" disabled={isLoading || disabled}>
+            {isLoading ? "Moving…" : "Move to Principal"}
+          </Button>
+        </form>
+        {disabled && (
+          <p className="text-muted-foreground mt-3 text-xs">
+            {title(sourceWallet)} has no balance to move yet.
+          </p>
+        )}
+      </CardContent>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Move to Principal?"
+        description={
+          <>
+            Moving <strong>${Number(amount || 0).toFixed(2)}</strong> from{" "}
+            {title(sourceWallet)} to Principal adds it to your stake — but your
+            trade-plan counter will <strong>restart from 0</strong>. You will
+            need <strong>140 more completed trades</strong> before your next
+            penalty-free withdrawal.
+          </>
+        }
+        confirmLabel="Yes, move & restart counter"
+        cancelLabel="Cancel"
+        onConfirm={doTransfer}
+      />
+    </Card>
   );
 }
 
@@ -423,13 +559,14 @@ function WithdrawPage() {
   const [walletAddress, setWalletAddress] = useState("");
   const [walletType, setWalletType] =
     useState<keyof typeof WithdrawalWalletType>("PRINCIPAL");
-  const isPrincipal = walletType === "PRINCIPAL";
+  const penaltyApplies =
+    walletType === "PRINCIPAL" || walletType === "TRADING_PROFIT";
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const tradeStats = useTradeStatisticsQuery();
   const tradePlan = tradeStats.data?.tradePlan;
   const tradesLeft = Math.max(
     0,
-    (tradePlan?.penaltyFreeAt ?? 0) - (tradeStats.data?.completedTrades ?? 0),
+    (tradePlan?.penaltyFreeAt ?? 0) - (tradeStats.data?.tradesSinceInflow ?? 0),
   );
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -502,7 +639,7 @@ function WithdrawPage() {
               />
             </div>
 
-            {isPrincipal && (
+            {penaltyApplies && (
               <div
                 className={`md:col-span-3 flex items-start gap-3 rounded-lg border p-4 ${
                   tradePlan?.penaltyFree
@@ -522,13 +659,13 @@ function WithdrawPage() {
                     }`}
                   >
                     {tradePlan?.penaltyFree
-                      ? "No penalty on Principal withdrawals"
-                      : "Early-exit penalty on Principal withdrawals"}
+                      ? "No penalty on Principal or Trading Profit withdrawals"
+                      : "Early-exit penalty on Principal & Trading Profit withdrawals"}
                   </p>
                   <p className="text-muted-foreground">
                     {tradePlan?.penaltyFree
                       ? "You have completed enough trades — only the standard 15% fee applies."
-                      : `You have completed ${tradeStats.data?.completedTrades ?? 0} of ${tradePlan?.penaltyFreeAt ?? 140} required trades. Withdrawing Principal now incurs a 40% penalty plus the standard 15% fee. ${tradesLeft} trades left to become penalty-free.`}
+                      : `You have completed ${tradeStats.data?.tradesSinceInflow ?? 0} of ${tradePlan?.penaltyFreeAt ?? 140} required trades since your last principal inflow. Withdrawing Principal or Trading Profit now incurs a 40% penalty plus the standard 15% fee. ${tradesLeft} trades left to become penalty-free.`}
                   </p>
                 </div>
               </div>
@@ -1117,16 +1254,23 @@ function RanksPage() {
   const requirements = q.data?.requirements ?? [];
 
   const requirementRows = (def: RankRequirement, s?: RankStats) => {
+    const selfPrincipalRow = {
+      label: `Self principal ≥ $${q.data?.minSelfPrincipal ?? 300}`,
+      current: s?.selfPrincipal ?? 0,
+      required: q.data?.minSelfPrincipal ?? 300,
+    };
     if (def.level === "LV1") {
       return [
+        selfPrincipalRow,
         {
-          label: `Directs with $${def.minDirectDeposit}+ deposit`,
+          label: `Directs holding $${def.minDirectDeposit}+ principal`,
           current: s?.qualifyingDirects ?? 0,
           required: def.qualifyingDirects,
         },
       ];
     }
     const rows = [
+      selfPrincipalRow,
       {
         label: "LV1+ achievers in team",
         current: s?.achieversByLevel?.LV1 ?? 0,

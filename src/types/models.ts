@@ -270,7 +270,11 @@ export interface TradeStatistics {
   totalAdminCommission: number;
   completedTrades: number;
   pendingTrades: number;
-  /** Progress through the fixed trade plan; drives the Principal withdrawal penalty. */
+  /** Completed trades since money last entered PRINCIPAL — the penalty counter. */
+  tradesSinceInflow: number;
+  /** Completed-trade count at the last principal inflow. */
+  tradeCountBaseline: number;
+  /** Progress through the fixed trade plan; drives the Principal & Trading Profit withdrawal penalty. */
   tradePlan: {
     totalTrades: number;
     /** Completed trades needed to waive the Principal early-exit penalty. */
@@ -278,6 +282,13 @@ export interface TradeStatistics {
     completionPercent: number;
     penaltyFree: boolean;
   };
+}
+
+export interface WalletTransferResult {
+  sourceWallet: string;
+  amount: number;
+  principalBalance: number;
+  tradeCountBaseline: number;
 }
 
 export interface TradeSessionResult {
@@ -415,7 +426,11 @@ export interface RankStats {
   directReferrals: number;
   qualifyingDirects: number;
   teamSize: number;
-  /** Downline members at each rank level or above, e.g. achieversByLevel.LV1 */
+  /** User's own PRINCIPAL wallet balance — every rank needs >= minSelfPrincipal */
+  selfPrincipal: number;
+  /** All current-rank conditions still hold (controls the cycle salary payout) */
+  eligible: boolean;
+  /** Eligible downline members at each rank level or above */
   achieversByLevel: Partial<Record<RankLevel, number>>;
 }
 
@@ -435,6 +450,7 @@ export interface RankRequirement {
 export interface CurrentRank {
   currentRank: RankLevel;
   stats: RankStats;
+  minSelfPrincipal: number;
   cycleDurationDays: number;
   requirements: RankRequirement[];
   rankDetails: Rank | null;

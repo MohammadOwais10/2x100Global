@@ -24,6 +24,8 @@ export interface UpdateProfileRequest {
 
 export interface SetWithdrawPasswordRequest {
   withdrawPassword: string;
+  /** 6-digit code emailed to the account owner via requestOtp. */
+  otp: string;
 }
 
 export interface SetWithdrawPasswordResponse {
@@ -63,8 +65,23 @@ export const usersApi = baseApi.injectEndpoints({
     }),
 
     /**
+     * Step 1 of a withdraw-password change: emails a 6-digit OTP to the
+     * account owner. Required before setWithdrawPassword will accept.
+     */
+    requestWithdrawPasswordOtp: builder.mutation<{ message?: string }, void>({
+      query: () => ({
+        url: bff("/users/withdraw-password/request-otp"),
+        method: "POST",
+      }),
+      transformResponse: (
+        response: ApiSuccess<Record<string, unknown>>,
+      ) => ({ message: response.message }),
+    }),
+
+    /**
      * Sets or changes the withdraw password. Any change restarts the 24h
      * withdrawal lock — all withdraw flows are blocked until it expires.
+     * Requires the OTP emailed via requestWithdrawPasswordOtp.
      */
     setWithdrawPassword: builder.mutation<
       SetWithdrawPasswordResponse,
@@ -136,6 +153,7 @@ export const usersApi = baseApi.injectEndpoints({
 
 export const {
   useUpdateProfileMutation,
+  useRequestWithdrawPasswordOtpMutation,
   useSetWithdrawPasswordMutation,
   useUserDashboardQuery,
   useToggleAutoTradeMutation,

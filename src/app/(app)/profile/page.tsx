@@ -32,7 +32,11 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileQuery } from "@/features/auth/api/auth-api";
 import { useFormSubmit } from "@/features/auth/hooks/use-form-submit";
-import { useSetWithdrawPasswordMutation, useUpdateProfileMutation } from "@/features/users/api/users-api";
+import {
+  useRequestWithdrawPasswordOtpMutation,
+  useSetWithdrawPasswordMutation,
+  useUpdateProfileMutation,
+} from "@/features/users/api/users-api";
 import { normalizeError } from "@/lib/api/errors";
 import { formatDateTime, humanizeEnum } from "@/lib/utils/format";
 import { ROUTES } from "@/config/routes";
@@ -54,11 +58,33 @@ export default function ProfilePage() {
   const [updateProfile] = useUpdateProfileMutation();
   const [setWithdrawPassword, { isLoading: savingWithdrawPw }] =
     useSetWithdrawPasswordMutation();
+  const [requestOtp, { isLoading: sendingOtp }] =
+    useRequestWithdrawPasswordOtpMutation();
   const [withdrawPw1, setWithdrawPw1] = useState("");
   const [withdrawPw2, setWithdrawPw2] = useState("");
+  const [withdrawOtp, setWithdrawOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const withdrawLockedUntil = profile?.withdrawLockedUntil
     ? new Date(profile.withdrawLockedUntil)
     : null;
+
+  const withdrawPwValid =
+    /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/.test(withdrawPw1) &&
+    withdrawPw1 === withdrawPw2;
+
+  async function sendWithdrawOtp() {
+    try {
+      await requestOtp().unwrap();
+      setOtpSent(true);
+      toast.success("Verification code sent", {
+        description: `Check ${profile?.email ?? "your email"} for the 6-digit code.`,
+      });
+    } catch (err) {
+      toast.error(
+        normalizeError(err as Parameters<typeof normalizeError>[0])?.message,
+      );
+    }
+  }
 
   async function submitWithdrawPassword(e: FormEvent) {
     e.preventDefault();
@@ -70,13 +96,21 @@ export default function ProfilePage() {
     if (withdrawPw1 !== withdrawPw2) {
       return toast.error("Passwords do not match.");
     }
+    if (!/^\d{6}$/.test(withdrawOtp)) {
+      return toast.error("Enter the 6-digit code from your email.");
+    }
     try {
-      await setWithdrawPassword({ withdrawPassword: withdrawPw1 }).unwrap();
+      await setWithdrawPassword({
+        withdrawPassword: withdrawPw1,
+        otp: withdrawOtp,
+      }).unwrap();
       toast.success(
         "Withdraw password saved. Withdrawals are locked for the next 24 hours.",
       );
       setWithdrawPw1("");
       setWithdrawPw2("");
+      setWithdrawOtp("");
+      setOtpSent(false);
       refetch();
     } catch (err) {
       toast.error(
@@ -290,8 +324,9 @@ export default function ProfilePage() {
                 Withdraw Password
               </CardTitle>
               <CardDescription>
-                Required on every withdrawal and pool bonus request. Changing
-                it locks withdrawals for 24 hours.
+                Required on every withdrawal and pool bonus request. Every
+                change needs the 6-digit code emailed to you, and locks
+                withdrawals for 24 hours.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -349,7 +384,43 @@ export default function ProfilePage() {
                         minLength={8}
                       />
                     </div>
-                    <Button type="submit" disabled={savingWithdrawPw}>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Label htmlFor="withdraw-otp">Email verification code</Label>
+                        <button
+                          type="button"
+                          onClick={sendWithdrawOtp}
+                          disabled={sendingOtp || !withdrawPwValid}
+                          className="text-foreground text-xs font-medium underline-offset-4 hover:underline disabled:opacity-50"
+                        >
+                          {sendingOtp
+                            ? "Sending…"
+                            : otpSent
+                              ? "Resend code"
+                              : "Send code to my email"}
+                        </button>
+                      </div>
+                      <Input
+                        id="withdraw-otp"
+                        inputMode="numeric"
+                        maxLength={6}
+                        autoComplete="one-time-code"
+                        placeholder="6-digit code"
+                        className="font-mono"
+                        value={withdrawOtp}
+                        onChange={(e) => setWithdrawOtp(e.target.value)}
+                        required
+                      />
+                      {otpSent && (
+                        <p className="text-muted-foreground text-xs">
+                          Code sent to {profile.email} — valid for 15 minutes.
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={savingWithdrawPw || !otpSent}
+                    >
                       <Save className="size-4" />
                       {savingWithdrawPw
                         ? "Saving…"

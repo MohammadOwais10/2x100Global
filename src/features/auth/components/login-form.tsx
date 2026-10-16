@@ -48,10 +48,24 @@ export function LoginForm() {
     form,
     mutate: async (values) => {
       const parsed = loginSchema.parse(values);
-      return login({
-        email: parsed.email,
-        password: parsed.password,
-      }).unwrap();
+      try {
+        return await login({
+          email: parsed.email,
+          password: parsed.password,
+        }).unwrap();
+      } catch (error) {
+        const message =
+          (error as { data?: { message?: string } })?.data?.message ?? "";
+        if (/verify your email/i.test(message)) {
+          toast.info("Verify your email first", {
+            description: "Enter the 6-digit code we emailed you, or resend it.",
+          });
+          router.replace(
+            `${ROUTES.verifyEmail}?email=${encodeURIComponent(parsed.email)}`,
+          );
+        }
+        throw error;
+      }
     },
     onSuccess: (user) => {
       toast.success(`Welcome back${user.name ? `, ${user.name}` : ""}`);

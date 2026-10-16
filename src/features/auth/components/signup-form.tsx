@@ -39,8 +39,8 @@ import { ROUTES } from "@/config/routes";
  * Signup — single-step form.
  *
  * Fields: name, email, password, optional phone/referral code + terms.
- * The backend auto-verifies the email, so on success we send the user
- * straight to login.
+ * On success the user must verify a 6-digit email OTP before the
+ * account can sign in — we redirect to /verify-email.
  */
 export function SignupForm() {
   const router = useRouter();
@@ -80,11 +80,13 @@ export function SignupForm() {
       const parsed = signupSchema.parse(values);
       return signup(toSignupRequest(parsed)).unwrap();
     },
-    onSuccess: () => {
-      toast.success("Account created", {
-        description: "You can now sign in with your credentials.",
+    onSuccess: (_data, values) => {
+      toast.success("Check your email", {
+        description: "We sent a 6-digit verification code to your email.",
       });
-      router.replace(ROUTES.login);
+      router.replace(
+        `${ROUTES.verifyEmail}?email=${encodeURIComponent(values.email)}`,
+      );
     },
   });
 

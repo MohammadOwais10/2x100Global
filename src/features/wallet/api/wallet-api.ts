@@ -1,6 +1,12 @@
 import { baseApi, bff } from "@/lib/api/base-api";
+import { MONEY_MOVEMENT_TAGS } from "@/lib/api/tags";
 import type { ApiSuccess, DecimalString } from "@/types/api";
-import type { Wallet, WalletSummary, WalletSummaryEntry } from "@/types/models";
+import type {
+  Wallet,
+  WalletSummary,
+  WalletSummaryEntry,
+  WalletTransferResult,
+} from "@/types/models";
 import { ALL_WALLET_TYPES, type WalletType } from "@/types/enums";
 
 /**
@@ -57,6 +63,16 @@ export const walletApi = baseApi.injectEndpoints({
         { type: "Wallet" as const, id: type },
       ],
     }),
+
+    transferToPrincipal: builder.mutation<
+      WalletTransferResult,
+      { sourceWallet: WalletType; amount: number }
+    >({
+      query: (body) => ({ url: bff("/wallets/transfer"), method: "POST", body }),
+      transformResponse: (response: ApiSuccess<WalletTransferResult>) =>
+        response.data,
+      invalidatesTags: [...MONEY_MOVEMENT_TAGS],
+    }),
   }),
   overrideExisting: false,
 });
@@ -65,4 +81,5 @@ export const {
   useWalletSummaryQuery,
   useWalletQuery,
   useWalletBalanceQuery,
+  useTransferToPrincipalMutation,
 } = walletApi;
