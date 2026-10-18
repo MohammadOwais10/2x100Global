@@ -30,6 +30,7 @@ import {
   type SignupFormValues,
 } from "../schemas/auth-schemas";
 import { ROUTES } from "@/config/routes";
+import { getDeviceFingerprint } from "@/lib/device/fingerprint";
 
 /**
  * Signup — single-step form.
@@ -75,7 +76,15 @@ export function SignupForm() {
     form,
     mutate: async (values) => {
       const parsed = signupSchema.parse(values);
-      return signup(toSignupRequest(parsed)).unwrap();
+      const deviceFingerprint = await getDeviceFingerprint();
+      if (!deviceFingerprint) {
+        // Backend requires a fingerprint — without one the account could not
+        // be bound to this device, so fail before the round trip.
+        throw new Error(
+          "Could not verify your device. Please refresh the page and try again.",
+        );
+      }
+      return signup(toSignupRequest(parsed, deviceFingerprint)).unwrap();
     },
     onSuccess: (_data, values) => {
       toast.success("Check your email", {

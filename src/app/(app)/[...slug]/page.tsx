@@ -2228,6 +2228,19 @@ function SupportTicketsPage() {
             page={data}
             loading={isLoading}
             getRowId={(r) => r.id}
+            onRowClick={(r) => setSelectedId(r.id as string)}
+            renderMobileCard={(r) => (
+              <MobileCard>
+                <Row label="Subject">{r.subject}</Row>
+                <Row label="Type">
+                  {priorityToHelpType[r.priority] || r.priority}
+                </Row>
+                <Row label="Status">
+                  <StatusBadge status={r.status} />
+                </Row>
+                <Row label="Created">{date(r.createdAt)}</Row>
+              </MobileCard>
+            )}
             onPageChange={setPage}
             emptyState={{
               title: "No support tickets yet",

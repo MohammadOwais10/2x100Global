@@ -144,12 +144,19 @@ export type SignupFormOutput = z.output<typeof signupSchema>;
  * sent as "" — the backend's optional fields reject empty strings.
  *
  * `confirmPassword` is client-only and never sent.
+ *
+ * `deviceFingerprint` comes from `getDeviceFingerprint()` — the backend
+ * requires it for the one-account-per-device rule.
  */
-export function toSignupRequest(values: SignupFormOutput): FormData {
+export function toSignupRequest(
+  values: SignupFormOutput,
+  deviceFingerprint: string,
+): FormData {
   const form = new FormData();
   form.set("name", values.name);
   form.set("email", values.email);
   form.set("password", values.password);
+  form.set("deviceFingerprint", deviceFingerprint);
 
   if (values.phone) form.set("phone", values.phone);
   if (values.country) form.set("country", values.country);

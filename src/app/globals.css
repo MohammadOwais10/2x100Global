@@ -370,6 +370,18 @@
       radial-gradient(ellipse 80% 50% at 50% -20%, var(--brand-muted-wash), transparent),
       radial-gradient(ellipse 60% 40% at 100% 0%, rgba(26, 157, 92, 0.07), transparent);
     background-attachment: fixed;
+    /* Mobile: `background-attachment: fixed` is ignored by iOS Safari anyway
+       and on Android it paints the gradient per scroll frame (jank). */
+    @media (max-width: 768px) {
+      background-attachment: scroll;
+    }
+  }
+
+  /* Last line of defence: no element may push the document wider than the
+     viewport. Component-level overflow (tables) still scrolls internally —
+     this only stops accidental full-page horizontal scroll. */
+  body {
+    overflow-x: clip;
   }
 
   /* Financial figures must never jitter as digits change during polling. */

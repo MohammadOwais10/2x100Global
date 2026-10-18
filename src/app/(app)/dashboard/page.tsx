@@ -298,7 +298,8 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : trades.data?.items.length ? (
-              <Table>
+              <div className="overflow-x-auto">
+                <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="text-muted-foreground text-[0.6875rem] tracking-widest uppercase">
@@ -313,7 +314,7 @@ export default function DashboardPage() {
                     <TableHead className="text-muted-foreground text-[0.6875rem] tracking-widest uppercase">
                       Status
                     </TableHead>
-                    <TableHead className="text-muted-foreground text-right text-[0.6875rem] tracking-widest uppercase">
+                    <TableHead className="text-muted-foreground hidden text-right text-[0.6875rem] tracking-widest uppercase sm:table-cell">
                       Exit
                     </TableHead>
                   </TableRow>
@@ -352,13 +353,14 @@ export default function DashboardPage() {
                       <TableCell>
                         <StatusBadge status={trade.status} />
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
+                      <TableCell className="text-muted-foreground hidden text-right text-xs whitespace-nowrap sm:table-cell">
                         {trade.exitTime ? formatDateTime(trade.exitTime) : "—"}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             ) : (
               <EmptyState
                 title="No trades yet"

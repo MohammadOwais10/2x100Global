@@ -367,14 +367,14 @@ export function DepositForm() {
             {/* Wallet Mode Fields */}
             {depositMode === "wallet" && (
               <>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label>From Wallet</Label>
                   <Input
                     value={address || ""}
                     readOnly
                     className="font-mono text-sm"
                   />
-                </div>
+                </div> */}
 
                 <div className="space-y-2">
                   <Label>To Platform Wallet (Receiver Address)</Label>

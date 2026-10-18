@@ -1639,7 +1639,17 @@ function AdminTicketsPage() {
   ];
 
   return <><PageHeader title="Support Tickets" description="Review user questions and reply to support tickets." />
-    <DataTable columns={ticketColumns} page={data} loading={isLoading} getRowId={(r) => r.id} onPageChange={setPage} emptyState={{ title: "No tickets", description: "User tickets will appear here." }} />
+    <DataTable columns={ticketColumns} page={data} loading={isLoading} getRowId={(r) => r.id} onRowClick={(r) => setSelectedId(r.id)} renderMobileCard={(r) => (
+      <div className="space-y-2 p-4 text-sm">
+        <div className="font-medium">{r.subject}</div>
+        <div className="text-muted-foreground truncate text-xs">{r.user?.email ?? "—"}</div>
+        <div className="flex items-center justify-between">
+          <StatusBadge status={r.status} />
+          <StatusBadge status={r.priority} />
+        </div>
+        <div className="text-muted-foreground text-xs">{new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(r.createdAt))}</div>
+      </div>
+    )} onPageChange={setPage} emptyState={{ title: "No tickets", description: "User tickets will appear here." }} />
   </>;
 }
 

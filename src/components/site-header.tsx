@@ -3,11 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 import { navLinks } from "@/lib/content";
 import { useAuth } from "@/context/AuthContext";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
@@ -17,10 +19,15 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const memberLink =
+    isAuthenticated && user
+      ? { href: user.role === "ADMIN" ? "/admin" : "/dashboard", label: "Dashboard" }
+      : { href: "/login", label: "Member Access" };
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-all duration-500 ${
-        scrolled
+        scrolled || menuOpen
           ? "border-b border-[var(--line)] bg-[#030806]/82 backdrop-blur-xl"
           : "bg-transparent"
       }`}
@@ -47,22 +54,42 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        {isAuthenticated && user ? (
+        <div className="flex items-center gap-3">
           <Link
-            href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+            href={memberLink.href}
             className="gold-border relative overflow-hidden rounded-full px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold-bright)] transition hover:shadow-[0_0_40px_rgba(212,175,90,0.25)]"
           >
-            <span className="relative z-10">Dashboard</span>
+            <span className="relative z-10">{memberLink.label}</span>
           </Link>
-        ) : (
-          <Link
-            href="/login"
-            className="gold-border relative overflow-hidden rounded-full px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold-bright)] transition hover:shadow-[0_0_40px_rgba(212,175,90,0.25)]"
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="grid size-10 place-items-center rounded-full border border-[var(--line)] text-[#c8d4c8] transition hover:text-[var(--gold-bright)] lg:hidden"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
           >
-            <span className="relative z-10">Member Access</span>
-          </Link>
-        )}
+            {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
       </div>
+
+      {menuOpen && (
+        <nav className="border-t border-[var(--line)] px-6 pb-6 pt-2 lg:hidden">
+          <ul className="flex flex-col">
+            {navLinks.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="block border-b border-[var(--line)]/60 py-3.5 text-xs font-medium uppercase tracking-[0.22em] text-[#c8d4c8] transition hover:text-[var(--gold-bright)]"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </header>
   );
 }
